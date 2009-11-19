@@ -40,6 +40,8 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
+#include <gcrypt.h>
+
 #include "routeros_api.h"
 
 #if 1
@@ -68,6 +70,13 @@ struct mt_reply_s
 
 	mt_reply_t *next;
 };
+
+struct mt_login_data_s
+{
+	const char *username;
+	const char *password;
+};
+typedef struct mt_login_data_s mt_login_data_t;
 
 /*
  * Private functions
@@ -582,6 +591,120 @@ static int create_socket (const char *node, const char *service) /* {{{ */
 	return (-1);
 } /* }}} int create_socket */
 
+static int login2_handler (mt_connection_t *c, const mt_reply_t *r, /* {{{ */
+		void *user_data)
+{
+	if (r == NULL)
+		return (EINVAL);
+
+	printf ("login2_handler has been called.\n");
+
+	return (0);
+} /* }}} int login2_handler */
+
+static void hash_binary_to_hex (char hex[33], uint8_t binary[16]) /* {{{ */
+{
+	int i;
+
+	for (i = 0; i < 16; i++)
+	{
+		char tmp[3];
+		snprintf (tmp, 3, "%02"PRIx8, binary[i]);
+		tmp[2] = 0;
+		hex[2*i] = tmp[0];
+		hex[2*i+1] = tmp[1];
+	}
+	hex[32] = 0;
+} /* }}} void hash_binary_to_hex */
+
+static void hash_hex_to_binary (uint8_t binary[16], char hex[33]) /* {{{ */
+{
+	int i;
+
+	for (i = 0; i < 16; i++)
+	{
+		char tmp[3];
+
+		tmp[0] = hex[2*i];
+		tmp[1] = hex[2*i + 1];
+		tmp[2] = 0;
+
+		binary[i] = (uint8_t) strtoul (tmp, /* endptr = */ NULL, /* base = */ 16);
+	}
+} /* }}} void hash_hex_to_binary */
+
+static void make_password_hash (char response_hex[33], /* {{{ */
+		const char *password, size_t password_length, char challenge_hex[33])
+{
+	uint8_t challenge_bin[16];
+	uint8_t response_bin[16];
+	char data_buffer[password_length+17];
+	gcry_md_hd_t md_handle;
+
+	hash_hex_to_binary (challenge_bin, challenge_hex);
+
+	data_buffer[0] = 0;
+	memcpy (&data_buffer[1], password, password_length);
+	memcpy (&data_buffer[1+password_length], challenge_bin, 16);
+
+	gcry_md_open (&md_handle, GCRY_MD_MD5, /* flags = */ 0);
+	gcry_md_write (md_handle, data_buffer, sizeof (data_buffer));
+	memcpy (response_bin, gcry_md_read (md_handle, GCRY_MD_MD5), 16);
+	gcry_md_close (md_handle);
+
+	hash_binary_to_hex (response_hex, response_bin);
+} /* }}} void make_password_hash */
+
+static int login_handler (mt_connection_t *c, const mt_reply_t *r, /* {{{ */
+		void *user_data)
+{
+	const char *ret;
+	char challenge_hex[33];
+	char response_hex[33];
+	mt_login_data_t *login_data;
+
+	const char *params[2];
+	char param_name[1024];
+	char param_response[64];
+
+	if (r == NULL)
+		return (EINVAL);
+
+	printf ("login_handler has been called.\n");
+
+	login_data = user_data;
+	if (login_data == NULL)
+		return (EINVAL);
+
+	ret = mt_reply_param_val_by_key (r, "ret");
+	if (ret == NULL)
+	{
+		mt_debug ("login_handler: Reply does not have parameter \"ret\".\n");
+		return (EPROTO);
+	}
+	mt_debug ("login_handler: ret = %s;\n", ret);
+
+	if (strlen (ret) != 32)
+	{
+		mt_debug ("login_handler: Unexpected length of the \"ret\" argument.\n");
+		return (EPROTO);
+	}
+	strcpy (challenge_hex, ret);
+
+	make_password_hash (response_hex, 
+			login_data->password, strlen (login_data->password),
+			challenge_hex);
+
+	snprintf (param_name, sizeof (param_name), "=name=%s", login_data->username);
+	snprintf (param_response, sizeof (param_response),
+			"=response=00%s", response_hex);
+	params[0] = param_name;
+	params[1] = param_response;
+
+	return (mt_query (c, "/login", 2, params, login2_handler,
+				/* user data = */ NULL));
+} /* }}} int login_handler */
+
 /*
  * Public functions
  */
@@ -590,6 +713,8 @@ mt_connection_t *mt_connect (const char *node, const char *service, /* {{{ */
 {
 	int fd;
 	mt_connection_t *c;
+	int status;
+	mt_login_data_t user_data;
 
 	if ((node == NULL) || (username == NULL) || (password == NULL))
 		return (NULL);
@@ -607,6 +732,11 @@ mt_connection_t *mt_connect (const char *node, const char *service, /* {{{ */
 	memset (c, 0, sizeof (*c));
 
 	c->fd = fd;
+
+	user_data.username = username;
+	user_data.password = password;
+	status = mt_query (c, "/login", /* args num = */ 0, /* args = */ NULL,
+			login_handler, &user_data);
 
 	return (c);
 } /* }}} mt_connection_t *mt_connect */
