@@ -165,6 +165,30 @@ static int reply_add_keyval (mt_reply_t *r, const char *key, /* {{{ */
 	return (0);
 } /* }}} int reply_add_keyval */
 
+static void reply_dump (const mt_reply_t *r) /* {{{ */
+{
+	if (r == NULL)
+		return;
+
+	printf ("=== BEGIN REPLY ===\n"
+			"Address: %p\n"
+			"Status: %s\n",
+			(void *) r, r->status);
+	if (r->params_num > 0)
+	{
+		unsigned int i;
+
+		printf ("Arguments:\n");
+		for (i = 0; i < r->params_num; i++)
+			printf (" %3u: %s = %s\n", i, r->keys[i], r->values[i]);
+	}
+	if (r->next != NULL)
+		printf ("Next: %p\n", (void *) r->next);
+	printf ("=== END REPLY ===\n");
+
+	reply_dump (r->next);
+} /* }}} void reply_dump */
+
 static void reply_free (mt_reply_t *r) /* {{{ */
 {
 	mt_reply_t *next;
@@ -598,6 +622,7 @@ static int login2_handler (mt_connection_t *c, const mt_reply_t *r, /* {{{ */
 		return (EINVAL);
 
 	printf ("login2_handler has been called.\n");
+	reply_dump (r);
 
 	return (0);
 } /* }}} int login2_handler */
@@ -671,6 +696,7 @@ static int login_handler (mt_connection_t *c, const mt_reply_t *r, /* {{{ */
 		return (EINVAL);
 
 	printf ("login_handler has been called.\n");
+	reply_dump (r);
 
 	login_data = user_data;
 	if (login_data == NULL)
