@@ -478,17 +478,17 @@ static int read_word (mt_connection_t *c, /* {{{ */
 	return (0);
 } /* }}} int buffer_decode_next */
 
-static mt_reply_t *receive_reply (mt_connection_t *c) /* {{{ */
+static mt_reply_t *receive_sentence (mt_connection_t *c) /* {{{ */
 {
 	char buffer[4096];
 	size_t buffer_size;
 	int status;
 
-	mt_reply_t *head;
-	mt_reply_t *tail;
+	mt_reply_t *r;
 
-	head = NULL;
-	tail = NULL;
+	r = reply_alloc ();
+	if (r == NULL)
+		return (NULL);
 
 	while (42)
 	{
@@ -505,33 +505,11 @@ static mt_reply_t *receive_reply (mt_connection_t *c) /* {{{ */
 
 		if (buffer[0] == '!') /* {{{ */
 		{
-			mt_reply_t *tmp;
-
-			tmp = reply_alloc ();
-			if (tmp == NULL)
-			{
-				status = ENOMEM;
+			if (r->status != NULL)
+				free (r->status);
+			r->status = strdup (&buffer[1]);
+			if (r->status == NULL)
 				break;
-			}
-
-			tmp->status = strdup (&buffer[1]);
-			if (tmp->status == NULL)
-			{
-				reply_free (tmp);
-				status = ENOMEM;
-				break;
-			}
-
-			if (tail == NULL)
-			{
-				head = tmp;
-				tail = tmp;
-			}
-			else
-			{
-				tail->next = tmp;
-				tail = tmp;
-			}
 		} /* }}} if (buffer[0] == '!') */
 		else if (buffer[0] == '=') /* {{{ */
 		{
@@ -548,20 +526,54 @@ static mt_reply_t *receive_reply (mt_connection_t *c) /* {{{ */
 			*val = 0;
 			val++;
 
-			reply_add_keyval (tail, key, val);
+			reply_add_keyval (r, key, val);
 		} /* }}} if (buffer[0] == '=') */
 		else
 		{
-			printf ("Ignoring unknown word: %s\n", buffer);
+			mt_debug ("receive_sentence: Ignoring unknown word: %s\n", buffer);
 		}
 	} /* while (42) */
 	
-	if (status != 0)
+	if (r->status == NULL)
 	{
-		reply_free (head);
+		reply_free (r);
 		return (NULL);
 	}
 
+	return (r);
+} /* }}} mt_reply_t *receive_sentence */
+
+static mt_reply_t *receive_reply (mt_connection_t *c) /* {{{ */
+{
+	mt_reply_t *head;
+	mt_reply_t *tail;
+
+	head = NULL;
+	tail = NULL;
+
+	while (42)
+	{
+		mt_reply_t *tmp;
+
+		tmp = receive_sentence (c);
+		if (tmp == NULL)
+			break;
+
+		if (tail == NULL)
+		{
+			head = tmp;
+			tail = tmp;
+		}
+		else
+		{
+			tail->next = tmp;
+			tail = tmp;
+		}
+
+		if (strcmp ("done", tmp->status) == 0)
+			break;
+	} /* while (42) */
+	
 	return (head);
 } /* }}} mt_reply_t *receive_reply */
 
