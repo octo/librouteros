@@ -348,6 +348,7 @@ static int send_command (mt_connection_t *c, /* {{{ */
 	if (status != 0)
 		return (status);
 
+	mt_debug ("send_command: command = %s;\n", command);
 	status = buffer_add (&buffer_ptr, &buffer_size, command);
 	if (status != 0)
 		return (status);
@@ -357,6 +358,7 @@ static int send_command (mt_connection_t *c, /* {{{ */
 		if (args[i] == NULL)
 			return (EINVAL);
 
+		mt_debug ("send_command: arg[%zu] = %s;\n", i, args[i]);
 		status = buffer_add (&buffer_ptr, &buffer_size, args[i]);
 		if (status != 0)
 			return (status);
