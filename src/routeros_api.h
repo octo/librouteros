@@ -43,7 +43,7 @@ int mt_disconnect (mt_connection_t *con);
 int mt_query (mt_connection_t *c,
 		const char *command,
 		size_t args_num, const char * const *args,
-		mt_reply_handler_t *handler, void *user_data);
+		mt_reply_handler_t handler, void *user_data);
 
 /* 
  * Reply handling

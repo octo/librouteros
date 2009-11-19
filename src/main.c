@@ -326,6 +326,7 @@ static int send_command (mt_connection_t *c, /* {{{ */
 		return (status);
 
 	buffer_ptr = buffer;
+	buffer_size = sizeof (buffer) - buffer_size;
 	while (buffer_size > 0)
 	{
 		ssize_t bytes_written;
@@ -614,7 +615,7 @@ int mt_disconnect (mt_connection_t *c) /* {{{ */
 int mt_query (mt_connection_t *c, /* {{{ */
 		const char *command,
 		size_t args_num, const char * const *args,
-		mt_reply_handler_t *handler, void *user_data)
+		mt_reply_handler_t handler, void *user_data)
 {
 	int status;
 	mt_reply_t *r;
