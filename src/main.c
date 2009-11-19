@@ -408,48 +408,48 @@ static int read_word (mt_connection_t *c, /* {{{ */
 		return (status);
 
 	/* Calculate `req_size' */
-	if (((unsigned char) buffer[0]) == 0xF0) /* {{{ */
+	if (((unsigned char) word_length[0]) == 0xF0) /* {{{ */
 	{
 		status = read_exact (c->fd, &word_length[1], 4);
 		if (status != 0)
 			return (status);
 
-		req_size = (buffer[1] << 24)
-			| (buffer[2] << 16)
-			| (buffer[3] << 8)
-			| buffer[4];
+		req_size = (word_length[1] << 24)
+			| (word_length[2] << 16)
+			| (word_length[3] << 8)
+			| word_length[4];
 	}
-	else if ((buffer[0] & 0xE0) == 0xE0)
+	else if ((word_length[0] & 0xE0) == 0xE0)
 	{
 		status = read_exact (c->fd, &word_length[1], 3);
 		if (status != 0)
 			return (status);
 
-		req_size = ((buffer[0] & 0x1F) << 24)
-			| (buffer[1] << 16)
-			| (buffer[2] << 8)
-			| buffer[3];
+		req_size = ((word_length[0] & 0x1F) << 24)
+			| (word_length[1] << 16)
+			| (word_length[2] << 8)
+			| word_length[3];
 	}
-	else if ((buffer[0] & 0xC0) == 0xC0)
+	else if ((word_length[0] & 0xC0) == 0xC0)
 	{
 		status = read_exact (c->fd, &word_length[1], 2);
 		if (status != 0)
 			return (status);
 
-		req_size = ((buffer[0] & 0x3F) << 16)
-			| (buffer[1] << 8)
-			| buffer[2];
+		req_size = ((word_length[0] & 0x3F) << 16)
+			| (word_length[1] << 8)
+			| word_length[2];
 	}
-	else if ((buffer[0] & 0x80) == 0x80)
+	else if ((word_length[0] & 0x80) == 0x80)
 	{
 		status = read_exact (c->fd, &word_length[1], 1);
 		if (status != 0)
 			return (status);
 
-		req_size = ((buffer[0] & 0x7F) << 8)
-			| buffer[1];
+		req_size = ((word_length[0] & 0x7F) << 8)
+			| word_length[1];
 	}
-	else if ((buffer[0] & 0x80) == 0)
+	else if ((word_length[0] & 0x80) == 0)
 	{
 		req_size = (size_t) word_length[0];
 	}
