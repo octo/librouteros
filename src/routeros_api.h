@@ -19,6 +19,8 @@
  *   Florian octo Forster <octo at verplant.org>
  **/
 
+#define ROUTEROS_API_PORT "8728"
+
 struct mt_connection_s;
 typedef struct mt_connection_s mt_connection_t;
 
