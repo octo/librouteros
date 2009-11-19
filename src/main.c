@@ -638,6 +638,12 @@ static int login2_handler (mt_connection_t *c, const mt_reply_t *r, /* {{{ */
 	printf ("login2_handler has been called.\n");
 	reply_dump (r);
 
+	if (strcmp (r->status, "done") != 0)
+	{
+		mt_debug ("login2_handler: Unexpected status: %s.\n", r->status);
+		return (EPROTO);
+	}
+
 	return (0);
 } /* }}} int login2_handler */
 
@@ -709,8 +715,21 @@ static int login_handler (mt_connection_t *c, const mt_reply_t *r, /* {{{ */
 	if (r == NULL)
 		return (EINVAL);
 
+	/* The expected result looks like this:
+	 * -- 8< --
+	 *  !done 
+	 *  =ret=ebddd18303a54111e2dea05a92ab46b4
+	 * -- >8 --
+	 */
+
 	printf ("login_handler has been called.\n");
 	reply_dump (r);
+
+	if (strcmp (r->status, "done") != 0)
+	{
+		mt_debug ("login_handler: Unexpected status: %s.\n", r->status);
+		return (EPROTO);
+	}
 
 	login_data = user_data;
 	if (login_data == NULL)
