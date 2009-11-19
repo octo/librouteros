@@ -42,6 +42,11 @@
 
 #include "routeros_api.h"
 
+#if 1
+# define mt_debug(...) fprintf (stdout, __VA_ARGS__)
+#else
+# define mt_debug(...) /**/
+#endif
 
 /* FIXME */
 char *strdup (const char *);
@@ -300,6 +305,9 @@ static int send_command (mt_connection_t *c, /* {{{ */
 	size_t i;
 	int status;
 
+	/* FIXME: For debugging only */
+	memset (buffer, 0, sizeof (buffer));
+
 	buffer_ptr = buffer;
 	buffer_size = sizeof (buffer);
 
@@ -529,6 +537,9 @@ static int create_socket (const char *node, const char *service) /* {{{ */
 	struct addrinfo *ai_ptr;
 	int status;
 
+	mt_debug ("create_socket (node = %s, service = %s);\n",
+			node, service);
+
 	memset (&ai_hint, 0, sizeof (ai_hint));
 #ifdef AI_ADDRCONFIG
 	ai_hint.ai_flags |= AI_ADDRCONFIG;
@@ -550,11 +561,15 @@ static int create_socket (const char *node, const char *service) /* {{{ */
 		fd = socket (ai_ptr->ai_family, ai_ptr->ai_socktype,
 				ai_ptr->ai_protocol);
 		if (fd < 0)
+		{
+			mt_debug ("create_socket: socket(2) failed.\n");
 			continue;
+		}
 
 		status = connect (fd, ai_ptr->ai_addr, ai_ptr->ai_addrlen);
 		if (status != 0)
 		{
+			mt_debug ("create_socket: connect(2) failed.\n");
 			close (fd);
 			continue;
 		}
