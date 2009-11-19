@@ -51,9 +51,13 @@ int mt_query (mt_connection_t *c,
 const mt_reply_t *mt_reply_next (const mt_reply_t *r);
 int mt_reply_num (const mt_reply_t *r);
 
+const char *mt_reply_status (const mt_reply_t *r);
+
 /* Receiving reply parameters */
-const char *mt_reply_param_key_by_index (const mt_reply_t *r, unsigned int index);
-const char *mt_reply_param_val_by_index (const mt_reply_t *r, unsigned int index);
+const char *mt_reply_param_key_by_index (const mt_reply_t *r,
+		unsigned int index);
+const char *mt_reply_param_val_by_index (const mt_reply_t *r,
+		unsigned int index);
 const char *mt_reply_param_val_by_key (const mt_reply_t *r, const char *key);
 
 /* vim: set ts=2 sw=2 noet fdm=marker : */

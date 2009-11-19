@@ -673,6 +673,13 @@ int mt_reply_num (const mt_reply_t *r) /* {{{ */
 	return (ret);
 } /* }}} int mt_reply_num */
 
+const char *mt_reply_status (const mt_reply_t *r) /* {{{ */
+{
+	if (r == NULL)
+		return (NULL);
+	return (r->status);
+} /* }}} char *mt_reply_status */
+
 const char *mt_reply_param_key_by_index (const mt_reply_t *r, /* {{{ */
 		unsigned int index)
 {
