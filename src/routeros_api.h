@@ -24,6 +24,10 @@
 
 #define ROUTEROS_API_PORT "8728"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct ros_connection_s;
 typedef struct ros_connection_s ros_connection_t;
 
@@ -62,6 +66,10 @@ const char *ros_reply_param_key_by_index (const ros_reply_t *r,
 const char *ros_reply_param_val_by_index (const ros_reply_t *r,
 		unsigned int index);
 const char *ros_reply_param_val_by_key (const ros_reply_t *r, const char *key);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ROUTEROS_API_H */
 
