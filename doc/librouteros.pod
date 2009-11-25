@@ -1,0 +1,159 @@
+=head1 NAME
+
+librouteros - Library for accessing MikroTik's RouterOS via its API
+
+=head1 DESCRIPTION
+
+B<librouteros> is a library to communicate with I<RouterOS>, the operating
+system of I<MikroTik's> I<RouterBoards>. It uses the "API port" provided by
+those systems to connect and talk to the devices. librouteros is a low-level
+library in that it abstracts the network protocol used but has next to no
+knowledge about the commands and responses available. Should such an high-level
+interface prove useful, it will be added as the need arises.
+
+=head1 GENERAL USAGE
+
+The interface of librouteros is designed to be lightweight and simple to use.
+The first thing when using the library is to create a connection object. Once a
+connection has been established and logging in succeeded, queries can be sent
+to the remote device. The library will encode and send the request, read back a
+reply, decode it and pass it to a callback function. The callback function has
+access to the parsed reply and can easily access all parts and parameters. It
+does not need to worry about memory management because everything provided to
+it will be freed by the library before returning to where the query was called
+from. When the application is done talking to the device and disconnects, the
+connection object will be freed.
+
+=head1 DATA TYPES
+
+The following data types are used and returned by librouteros:
+
+=over 4
+
+=item B<ros_connection_t>
+
+The "connection object" represents the connection to one device.
+This is an opaque data type, meaning that you can only have pointers to such
+objects but not dereference or manipulate them directly.
+
+=item B<ros_reply_t>
+
+One part of a reply (which are stored as a list) received from a device. The
+head of the list (the first part) is passed to the callback function.
+This is an opaque data type, meaning that you can only have pointers to such
+objects but not dereference or manipulate them directly.
+
+=item B<ros_reply_handler_t>
+
+Convenience data type for the callback functions. Callback functions must have
+the following prototype:
+
+  int callback (ros_connection_t *c, const ros_reply_t *r, void *user_data);
+
+The first and second arguments are objects representing the connection and the
+reply respectively. I<user_data> is a pointer as passed to B<ros_query> (see
+below).
+
+The value returned by the callback function will be returned by B<ros_query> to
+the calling code. To distinguish from error codes returned by B<ros_query> upon
+errors, use negative values in the callback function.
+
+=back
+
+=head1 FUNCTIONS
+
+The following functions are part of librouteros' API and exported. Functions
+not listed here are not part of the API, should not be exported and may change
+and disappear at any time. Please report such functions are bugs.
+
+=over 4
+
+=item ros_connection_t *B<ros_connect> (const char *I<node>, const char *I<service>, const char *I<username>, const char *I<password>)
+
+Connects to the remote device using I<node> as the address or hostname. If
+I<service> is C<NULL>, the standard port B<8728> will be used. When a
+connection has been established, the library will try to authenticate using
+I<username> and I<password>.
+
+On failure, C<NULL> is returned and B<errno> is set appropriately.
+
+=item int B<ros_disconnect> (ros_connection_t *I<c>)
+
+Disconnects from the device and frees all memory associated with the
+connection. After this call, I<c> may not be used anymore.
+
+Returns zero upon success and an error code otherwise.
+
+=item int B<ros_query> (ros_connection_t *I<c>, const char *I<command>, size_t I<args_num>, const char * const *I<args>, ros_reply_handler_t I<handler>, void *I<user_data>)
+
+Sends the command I<command> with the I<args_num> arguments I<args> via the
+connection I<c> and reads back the reply. The reply is parsed and passed to the
+callback function I<handler>. I<user_data> is a pointer passed through to the
+callback function. Please note that the callback function is called only once,
+even if the reply consists of multiple parts. Use the B<ros_reply_next>
+function (see below) to access the other parts.
+
+Returns the value returned by the callback function upon success and an error
+code otherwise.
+
+=item const ros_reply_t *B<ros_reply_next> (const ros_reply_t *I<r>)
+
+Each reply can consist of several parts or "sentences". If there is more than
+one sentence returned by the device, this function will return the next part.
+When the end of the list is reached, C<NULL> is returned.
+
+=item int B<ros_reply_num> (const ros_reply_t *I<r>)
+
+Returns the number of replies in the list pointed to by and including I<r>.
+
+=item const char *B<ros_reply_status> (const ros_reply_t *I<r>)
+
+Returns the status message of this part or reply. This is usually "re" for data
+parts, "done" for the last part in a reply and "trap" for errors.
+The returned pointer must not be freed.
+
+=item const char *B<ros_reply_param_key_by_index> (const ros_reply_t *I<r>, unsigned int I<index>)
+
+Returns the parameter key at index I<index> (starting with zero) of reply I<r>.
+If I<index> is out of bounds, returns C<NULL>.
+The returned pointer must not be freed.
+
+=item const char *B<ros_reply_param_val_by_index> (const ros_reply_t *I<r>, unsigned int I<index>)
+
+Returns the parameter value at index I<index> (starting with zero) of reply
+I<r>. If I<index> is out of bounds, returns C<NULL>.
+The returned pointer must not be freed.
+
+=item const char *ros_reply_param_val_by_key (const ros_reply_t *r, const char *key)
+
+Returns the parameter value corresponding to key I<key> (or C<NULL> if there is
+no such key) of reply I<r>.
+The returned pointer must not be freed.
+
+=back
+
+=head1 ERROR HANDLING
+
+Some of the functions above return an "error code". This error code can be
+transferred to a string describing the error using L<strerror(3)> or
+L<strerror_r(3)>. Since the error codes are all positive integers, it is
+recommended to use negative return values in the callback functions to indicate
+custom errors if appropriate.
+
+=head1 THREAD SAFETY
+
+librouteros uses only thread-safe functions and does not store any global data
+itself. It is therefore fully thread and reentrant safe as long as you don't
+call any functions with the same connection object.
+
+=head1 LICENSE
+
+librouteros is licensed under the GPLv2. No other version of the license is
+applicable.
+
+=head1 AUTHOR
+
+librouteros is written by Florian octo Forster E<lt>octo at verplant.orgE<gt>.
+It's homepage can be found at L<http://verplant.org/librouteros/>.
+
+(c) 2009 by Florian octo Forster.
