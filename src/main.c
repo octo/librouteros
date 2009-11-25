@@ -638,7 +638,13 @@ static int login2_handler (ros_connection_t *c, const ros_reply_t *r, /* {{{ */
 	printf ("login2_handler has been called.\n");
 	reply_dump (r);
 
-	if (strcmp (r->status, "done") != 0)
+	if (strcmp (r->status, "trap") == 0)
+	{
+		ros_debug ("login2_handler: Logging in failed: %s.\n",
+				ros_reply_param_val_by_key (r, "message"));
+		return (EACCES);
+	}
+	else if (strcmp (r->status, "done") != 0)
 	{
 		ros_debug ("login2_handler: Unexpected status: %s.\n", r->status);
 		return (EPROTO);
@@ -796,6 +802,13 @@ ros_connection_t *ros_connect (const char *node, const char *service, /* {{{ */
 	user_data.password = password;
 	status = ros_query (c, "/login", /* args num = */ 0, /* args = */ NULL,
 			login_handler, &user_data);
+
+	if (status != 0)
+	{
+		ros_disconnect (c);
+		errno = status;
+		return (NULL);
+	}
 
 	return (c);
 } /* }}} ros_connection_t *ros_connect */
