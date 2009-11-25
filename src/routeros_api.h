@@ -19,6 +19,9 @@
  *   Florian octo Forster <octo at verplant.org>
  **/
 
+#ifndef ROUTEROS_API_H
+#define ROUTEROS_API_H 1
+
 #define ROUTEROS_API_PORT "8728"
 
 struct ros_connection_s;
@@ -59,5 +62,7 @@ const char *ros_reply_param_key_by_index (const ros_reply_t *r,
 const char *ros_reply_param_val_by_index (const ros_reply_t *r,
 		unsigned int index);
 const char *ros_reply_param_val_by_key (const ros_reply_t *r, const char *key);
+
+#endif /* ROUTEROS_API_H */
 
 /* vim: set ts=2 sw=2 noet fdm=marker : */
