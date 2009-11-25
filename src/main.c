@@ -27,6 +27,8 @@
 # define _POSIX_C_SOURCE 200112L
 #endif
 
+#include <config.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -44,7 +46,7 @@
 
 #include "routeros_api.h"
 
-#if 1
+#if WITH_DEBUG
 # define ros_debug(...) fprintf (stdout, __VA_ARGS__)
 #else
 # define ros_debug(...) /**/
@@ -165,6 +167,7 @@ static int reply_add_keyval (ros_reply_t *r, const char *key, /* {{{ */
 	return (0);
 } /* }}} int reply_add_keyval */
 
+#if WITH_DEBUG
 static void reply_dump (const ros_reply_t *r) /* {{{ */
 {
 	if (r == NULL)
@@ -188,6 +191,9 @@ static void reply_dump (const ros_reply_t *r) /* {{{ */
 
 	reply_dump (r->next);
 } /* }}} void reply_dump */
+#else
+# define reply_dump(foo) /**/
+#endif
 
 static void reply_free (ros_reply_t *r) /* {{{ */
 {
@@ -635,7 +641,6 @@ static int login2_handler (ros_connection_t *c, const ros_reply_t *r, /* {{{ */
 	if (r == NULL)
 		return (EINVAL);
 
-	printf ("login2_handler has been called.\n");
 	reply_dump (r);
 
 	if (strcmp (r->status, "trap") == 0)
@@ -727,8 +732,6 @@ static int login_handler (ros_connection_t *c, const ros_reply_t *r, /* {{{ */
 	 *  =ret=ebddd18303a54111e2dea05a92ab46b4
 	 * -- >8 --
 	 */
-
-	printf ("login_handler has been called.\n");
 	reply_dump (r);
 
 	if (strcmp (r->status, "done") != 0)
