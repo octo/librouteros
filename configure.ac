@@ -47,7 +47,7 @@ AC_CHECK_HEADERS(netdb.h)
 #
 # Check for libgcrypt
 #
-AC_CHECK_HEADERS(gcrypt.h)
+AC_CHECK_HEADERS(gcrypt.h, [], [AC_MSG_ERROR("gcrypt.h is required for librouteros to compile")])
 
 socket_needs_socket="no"
 AC_CHECK_FUNCS(socket, [],
