@@ -22,6 +22,8 @@
 #ifndef ROUTEROS_API_H
 #define ROUTEROS_API_H 1
 
+#include <routeros_version.h>
+
 #define ROUTEROS_API_PORT "8728"
 
 #ifdef __cplusplus

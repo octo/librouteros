@@ -1,0 +1,27 @@
+#ifndef ROUTEROS_VERSION_H
+#define ROUTEROS_VERSION_H 1
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define ROS_VERSION_MAJOR @LIBROUTEROS_MAJOR@
+#define ROS_VERSION_MINOR @LIBROUTEROS_MINOR@
+#define ROS_VERSION_PATCH @LIBROUTEROS_PATCH@
+
+#define ROS_VERSION_STRING "@LIBROUTEROS_MAJOR@.@LIBROUTEROS_MINOR@.@LIBROUTEROS_PATCH@"
+
+#define ROS_VERSION_ENCODE(major, minor, patch) \
+	((major) * 10000 + (minor) * 100 + (patch))
+
+#define ROS_VERSION \
+	ROS_VERSION_ENCODE(ROS_VERSION_MAJOR, ROS_VERSION_MINOR, ROS_VERSION_PATCH)
+
+int ros_version (void);
+const char *ros_version_string (void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* ROUTEROS_VERSION_H */

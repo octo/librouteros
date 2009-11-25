@@ -908,4 +908,14 @@ const char *ros_reply_param_val_by_key (const ros_reply_t *r, /* {{{ */
 	return (NULL);
 } /* }}} char *ros_reply_param_val_by_key */
 
+int ros_version (void) /* {{{ */
+{
+	return (ROS_VERSION);
+} /* }}} int ros_version */
+
+const char *ros_version_string (void) /* {{{ */
+{
+	return (ROS_VERSION_STRING);
+} /* }}} char *ros_version_string */
+
 /* vim: set ts=2 sw=2 noet fdm=marker : */
