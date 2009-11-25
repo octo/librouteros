@@ -21,43 +21,43 @@
 
 #define ROUTEROS_API_PORT "8728"
 
-struct mt_connection_s;
-typedef struct mt_connection_s mt_connection_t;
+struct ros_connection_s;
+typedef struct ros_connection_s ros_connection_t;
 
-struct mt_reply_s;
-typedef struct mt_reply_s mt_reply_t;
+struct ros_reply_s;
+typedef struct ros_reply_s ros_reply_t;
 
-typedef int (*mt_reply_handler_t) (mt_connection_t *c, const mt_reply_t *r,
+typedef int (*ros_reply_handler_t) (ros_connection_t *c, const ros_reply_t *r,
 		void *user_data);
 
 /*
  * Connection handling
  */
-mt_connection_t *mt_connect (const char *node, const char *service,
+ros_connection_t *ros_connect (const char *node, const char *service,
 		const char *username, const char *password);
-int mt_disconnect (mt_connection_t *con);
+int ros_disconnect (ros_connection_t *con);
 
 /* 
  * Command execution
  */
-int mt_query (mt_connection_t *c,
+int ros_query (ros_connection_t *c,
 		const char *command,
 		size_t args_num, const char * const *args,
-		mt_reply_handler_t handler, void *user_data);
+		ros_reply_handler_t handler, void *user_data);
 
 /* 
  * Reply handling
  */
-const mt_reply_t *mt_reply_next (const mt_reply_t *r);
-int mt_reply_num (const mt_reply_t *r);
+const ros_reply_t *ros_reply_next (const ros_reply_t *r);
+int ros_reply_num (const ros_reply_t *r);
 
-const char *mt_reply_status (const mt_reply_t *r);
+const char *ros_reply_status (const ros_reply_t *r);
 
 /* Receiving reply parameters */
-const char *mt_reply_param_key_by_index (const mt_reply_t *r,
+const char *ros_reply_param_key_by_index (const ros_reply_t *r,
 		unsigned int index);
-const char *mt_reply_param_val_by_index (const mt_reply_t *r,
+const char *ros_reply_param_val_by_index (const ros_reply_t *r,
 		unsigned int index);
-const char *mt_reply_param_val_by_key (const mt_reply_t *r, const char *key);
+const char *ros_reply_param_val_by_key (const ros_reply_t *r, const char *key);
 
 /* vim: set ts=2 sw=2 noet fdm=marker : */

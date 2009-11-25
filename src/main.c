@@ -45,9 +45,9 @@
 #include "routeros_api.h"
 
 #if 1
-# define mt_debug(...) fprintf (stdout, __VA_ARGS__)
+# define ros_debug(...) fprintf (stdout, __VA_ARGS__)
 #else
-# define mt_debug(...) /**/
+# define ros_debug(...) /**/
 #endif
 
 /* FIXME */
@@ -56,27 +56,27 @@ char *strdup (const char *);
 /*
  * Private structures
  */
-struct mt_connection_s
+struct ros_connection_s
 {
 	int fd;
 };
 
-struct mt_reply_s
+struct ros_reply_s
 {
 	unsigned int params_num;
 	char *status;
 	char **keys;
 	char **values;
 
-	mt_reply_t *next;
+	ros_reply_t *next;
 };
 
-struct mt_login_data_s
+struct ros_login_data_s
 {
 	const char *username;
 	const char *password;
 };
-typedef struct mt_login_data_s mt_login_data_t;
+typedef struct ros_login_data_s ros_login_data_t;
 
 /*
  * Private functions
@@ -118,9 +118,9 @@ static int read_exact (int fd, void *buffer, size_t buffer_size) /* {{{ */
 	return (0);
 } /* }}} int read_exact */
 
-static mt_reply_t *reply_alloc (void) /* {{{ */
+static ros_reply_t *reply_alloc (void) /* {{{ */
 {
-	mt_reply_t *r;
+	ros_reply_t *r;
 
 	r = malloc (sizeof (*r));
 	if (r == NULL)
@@ -132,9 +132,9 @@ static mt_reply_t *reply_alloc (void) /* {{{ */
 	r->next = NULL;
 
 	return (r);
-} /* }}} mt_reply_s *reply_alloc */
+} /* }}} ros_reply_s *reply_alloc */
 
-static int reply_add_keyval (mt_reply_t *r, const char *key, /* {{{ */
+static int reply_add_keyval (ros_reply_t *r, const char *key, /* {{{ */
 		const char *val)
 {
 	char **tmp;
@@ -165,7 +165,7 @@ static int reply_add_keyval (mt_reply_t *r, const char *key, /* {{{ */
 	return (0);
 } /* }}} int reply_add_keyval */
 
-static void reply_dump (const mt_reply_t *r) /* {{{ */
+static void reply_dump (const ros_reply_t *r) /* {{{ */
 {
 	if (r == NULL)
 		return;
@@ -189,9 +189,9 @@ static void reply_dump (const mt_reply_t *r) /* {{{ */
 	reply_dump (r->next);
 } /* }}} void reply_dump */
 
-static void reply_free (mt_reply_t *r) /* {{{ */
+static void reply_free (ros_reply_t *r) /* {{{ */
 {
-	mt_reply_t *next;
+	ros_reply_t *next;
 	unsigned int i;
 
 	if (r == NULL)
@@ -327,7 +327,7 @@ static int buffer_end (char **ret_buffer, size_t *ret_buffer_size) /* {{{ */
 	return (0);
 } /* }}} int buffer_end */
 
-static int send_command (mt_connection_t *c, /* {{{ */
+static int send_command (ros_connection_t *c, /* {{{ */
 		const char *command,
 		size_t args_num, const char * const *args)
 {
@@ -348,7 +348,7 @@ static int send_command (mt_connection_t *c, /* {{{ */
 	if (status != 0)
 		return (status);
 
-	mt_debug ("send_command: command = %s;\n", command);
+	ros_debug ("send_command: command = %s;\n", command);
 	status = buffer_add (&buffer_ptr, &buffer_size, command);
 	if (status != 0)
 		return (status);
@@ -358,7 +358,7 @@ static int send_command (mt_connection_t *c, /* {{{ */
 		if (args[i] == NULL)
 			return (EINVAL);
 
-		mt_debug ("send_command: arg[%zu] = %s;\n", i, args[i]);
+		ros_debug ("send_command: arg[%zu] = %s;\n", i, args[i]);
 		status = buffer_add (&buffer_ptr, &buffer_size, args[i]);
 		if (status != 0)
 			return (status);
@@ -392,7 +392,7 @@ static int send_command (mt_connection_t *c, /* {{{ */
 	return (0);
 } /* }}} int send_command */
 
-static int read_word (mt_connection_t *c, /* {{{ */
+static int read_word (ros_connection_t *c, /* {{{ */
 		char *buffer, size_t *buffer_size)
 {
 	size_t req_size;
@@ -478,13 +478,13 @@ static int read_word (mt_connection_t *c, /* {{{ */
 	return (0);
 } /* }}} int buffer_decode_next */
 
-static mt_reply_t *receive_sentence (mt_connection_t *c) /* {{{ */
+static ros_reply_t *receive_sentence (ros_connection_t *c) /* {{{ */
 {
 	char buffer[4096];
 	size_t buffer_size;
 	int status;
 
-	mt_reply_t *r;
+	ros_reply_t *r;
 
 	r = reply_alloc ();
 	if (r == NULL)
@@ -530,7 +530,7 @@ static mt_reply_t *receive_sentence (mt_connection_t *c) /* {{{ */
 		} /* }}} if (buffer[0] == '=') */
 		else
 		{
-			mt_debug ("receive_sentence: Ignoring unknown word: %s\n", buffer);
+			ros_debug ("receive_sentence: Ignoring unknown word: %s\n", buffer);
 		}
 	} /* while (42) */
 	
@@ -541,19 +541,19 @@ static mt_reply_t *receive_sentence (mt_connection_t *c) /* {{{ */
 	}
 
 	return (r);
-} /* }}} mt_reply_t *receive_sentence */
+} /* }}} ros_reply_t *receive_sentence */
 
-static mt_reply_t *receive_reply (mt_connection_t *c) /* {{{ */
+static ros_reply_t *receive_reply (ros_connection_t *c) /* {{{ */
 {
-	mt_reply_t *head;
-	mt_reply_t *tail;
+	ros_reply_t *head;
+	ros_reply_t *tail;
 
 	head = NULL;
 	tail = NULL;
 
 	while (42)
 	{
-		mt_reply_t *tmp;
+		ros_reply_t *tmp;
 
 		tmp = receive_sentence (c);
 		if (tmp == NULL)
@@ -575,7 +575,7 @@ static mt_reply_t *receive_reply (mt_connection_t *c) /* {{{ */
 	} /* while (42) */
 	
 	return (head);
-} /* }}} mt_reply_t *receive_reply */
+} /* }}} ros_reply_t *receive_reply */
 
 static int create_socket (const char *node, const char *service) /* {{{ */
 {
@@ -584,7 +584,7 @@ static int create_socket (const char *node, const char *service) /* {{{ */
 	struct addrinfo *ai_ptr;
 	int status;
 
-	mt_debug ("create_socket (node = %s, service = %s);\n",
+	ros_debug ("create_socket (node = %s, service = %s);\n",
 			node, service);
 
 	memset (&ai_hint, 0, sizeof (ai_hint));
@@ -609,14 +609,14 @@ static int create_socket (const char *node, const char *service) /* {{{ */
 				ai_ptr->ai_protocol);
 		if (fd < 0)
 		{
-			mt_debug ("create_socket: socket(2) failed.\n");
+			ros_debug ("create_socket: socket(2) failed.\n");
 			continue;
 		}
 
 		status = connect (fd, ai_ptr->ai_addr, ai_ptr->ai_addrlen);
 		if (status != 0)
 		{
-			mt_debug ("create_socket: connect(2) failed.\n");
+			ros_debug ("create_socket: connect(2) failed.\n");
 			close (fd);
 			continue;
 		}
@@ -629,7 +629,7 @@ static int create_socket (const char *node, const char *service) /* {{{ */
 	return (-1);
 } /* }}} int create_socket */
 
-static int login2_handler (mt_connection_t *c, const mt_reply_t *r, /* {{{ */
+static int login2_handler (ros_connection_t *c, const ros_reply_t *r, /* {{{ */
 		void *user_data)
 {
 	if (r == NULL)
@@ -640,7 +640,7 @@ static int login2_handler (mt_connection_t *c, const mt_reply_t *r, /* {{{ */
 
 	if (strcmp (r->status, "done") != 0)
 	{
-		mt_debug ("login2_handler: Unexpected status: %s.\n", r->status);
+		ros_debug ("login2_handler: Unexpected status: %s.\n", r->status);
 		return (EPROTO);
 	}
 
@@ -700,13 +700,13 @@ static void make_password_hash (char response_hex[33], /* {{{ */
 	hash_binary_to_hex (response_hex, response_bin);
 } /* }}} void make_password_hash */
 
-static int login_handler (mt_connection_t *c, const mt_reply_t *r, /* {{{ */
+static int login_handler (ros_connection_t *c, const ros_reply_t *r, /* {{{ */
 		void *user_data)
 {
 	const char *ret;
 	char challenge_hex[33];
 	char response_hex[33];
-	mt_login_data_t *login_data;
+	ros_login_data_t *login_data;
 
 	const char *params[2];
 	char param_name[1024];
@@ -727,7 +727,7 @@ static int login_handler (mt_connection_t *c, const mt_reply_t *r, /* {{{ */
 
 	if (strcmp (r->status, "done") != 0)
 	{
-		mt_debug ("login_handler: Unexpected status: %s.\n", r->status);
+		ros_debug ("login_handler: Unexpected status: %s.\n", r->status);
 		return (EPROTO);
 	}
 
@@ -735,17 +735,17 @@ static int login_handler (mt_connection_t *c, const mt_reply_t *r, /* {{{ */
 	if (login_data == NULL)
 		return (EINVAL);
 
-	ret = mt_reply_param_val_by_key (r, "ret");
+	ret = ros_reply_param_val_by_key (r, "ret");
 	if (ret == NULL)
 	{
-		mt_debug ("login_handler: Reply does not have parameter \"ret\".\n");
+		ros_debug ("login_handler: Reply does not have parameter \"ret\".\n");
 		return (EPROTO);
 	}
-	mt_debug ("login_handler: ret = %s;\n", ret);
+	ros_debug ("login_handler: ret = %s;\n", ret);
 
 	if (strlen (ret) != 32)
 	{
-		mt_debug ("login_handler: Unexpected length of the \"ret\" argument.\n");
+		ros_debug ("login_handler: Unexpected length of the \"ret\" argument.\n");
 		return (EPROTO);
 	}
 	strcpy (challenge_hex, ret);
@@ -760,20 +760,20 @@ static int login_handler (mt_connection_t *c, const mt_reply_t *r, /* {{{ */
 	params[0] = param_name;
 	params[1] = param_response;
 
-	return (mt_query (c, "/login", 2, params, login2_handler,
+	return (ros_query (c, "/login", 2, params, login2_handler,
 				/* user data = */ NULL));
 } /* }}} int login_handler */
 
 /*
  * Public functions
  */
-mt_connection_t *mt_connect (const char *node, const char *service, /* {{{ */
+ros_connection_t *ros_connect (const char *node, const char *service, /* {{{ */
 		const char *username, const char *password)
 {
 	int fd;
-	mt_connection_t *c;
+	ros_connection_t *c;
 	int status;
-	mt_login_data_t user_data;
+	ros_login_data_t user_data;
 
 	if ((node == NULL) || (username == NULL) || (password == NULL))
 		return (NULL);
@@ -794,13 +794,13 @@ mt_connection_t *mt_connect (const char *node, const char *service, /* {{{ */
 
 	user_data.username = username;
 	user_data.password = password;
-	status = mt_query (c, "/login", /* args num = */ 0, /* args = */ NULL,
+	status = ros_query (c, "/login", /* args num = */ 0, /* args = */ NULL,
 			login_handler, &user_data);
 
 	return (c);
-} /* }}} mt_connection_t *mt_connect */
+} /* }}} ros_connection_t *ros_connect */
 
-int mt_disconnect (mt_connection_t *c) /* {{{ */
+int ros_disconnect (ros_connection_t *c) /* {{{ */
 {
 	if (c == NULL)
 		return (EINVAL);
@@ -814,15 +814,15 @@ int mt_disconnect (mt_connection_t *c) /* {{{ */
 	free (c);
 
 	return (0);
-} /* }}} int mt_disconnect */
+} /* }}} int ros_disconnect */
 
-int mt_query (mt_connection_t *c, /* {{{ */
+int ros_query (ros_connection_t *c, /* {{{ */
 		const char *command,
 		size_t args_num, const char * const *args,
-		mt_reply_handler_t handler, void *user_data)
+		ros_reply_handler_t handler, void *user_data)
 {
 	int status;
-	mt_reply_t *r;
+	ros_reply_t *r;
 
 	status = send_command (c, command, args_num, args);
 	if (status != 0)
@@ -840,36 +840,36 @@ int mt_query (mt_connection_t *c, /* {{{ */
 
 	/* ... and return. */
 	return (status);
-} /* }}} int mt_query */
+} /* }}} int ros_query */
 
-const mt_reply_t *mt_reply_next (const mt_reply_t *r) /* {{{ */
+const ros_reply_t *ros_reply_next (const ros_reply_t *r) /* {{{ */
 {
 	if (r == NULL)
 		return (NULL);
 
 	return (r->next);
-} /* }}} mt_reply_t *mt_reply_next */
+} /* }}} ros_reply_t *ros_reply_next */
 
-int mt_reply_num (const mt_reply_t *r) /* {{{ */
+int ros_reply_num (const ros_reply_t *r) /* {{{ */
 {
 	int ret;
-	const mt_reply_t *ptr;
+	const ros_reply_t *ptr;
 
 	ret = 0;
 	for (ptr = r; ptr != NULL; ptr = ptr->next)
 		ret++;
 
 	return (ret);
-} /* }}} int mt_reply_num */
+} /* }}} int ros_reply_num */
 
-const char *mt_reply_status (const mt_reply_t *r) /* {{{ */
+const char *ros_reply_status (const ros_reply_t *r) /* {{{ */
 {
 	if (r == NULL)
 		return (NULL);
 	return (r->status);
-} /* }}} char *mt_reply_status */
+} /* }}} char *ros_reply_status */
 
-const char *mt_reply_param_key_by_index (const mt_reply_t *r, /* {{{ */
+const char *ros_reply_param_key_by_index (const ros_reply_t *r, /* {{{ */
 		unsigned int index)
 {
 	if (r == NULL)
@@ -879,9 +879,9 @@ const char *mt_reply_param_key_by_index (const mt_reply_t *r, /* {{{ */
 		return (NULL);
 
 	return (r->keys[index]);
-} /* }}} char *mt_reply_param_key_by_index */
+} /* }}} char *ros_reply_param_key_by_index */
 
-const char *mt_reply_param_val_by_index (const mt_reply_t *r, /* {{{ */
+const char *ros_reply_param_val_by_index (const ros_reply_t *r, /* {{{ */
 		unsigned int index)
 {
 	if (r == NULL)
@@ -891,9 +891,9 @@ const char *mt_reply_param_val_by_index (const mt_reply_t *r, /* {{{ */
 		return (NULL);
 
 	return (r->values[index]);
-} /* }}} char *mt_reply_param_key_by_index */
+} /* }}} char *ros_reply_param_key_by_index */
 
-const char *mt_reply_param_val_by_key (const mt_reply_t *r, /* {{{ */
+const char *ros_reply_param_val_by_key (const ros_reply_t *r, /* {{{ */
 		const char *key)
 {
 	unsigned int i;
@@ -906,6 +906,6 @@ const char *mt_reply_param_val_by_key (const mt_reply_t *r, /* {{{ */
 			return (r->values[i]);
 
 	return (NULL);
-} /* }}} char *mt_reply_param_val_by_key */
+} /* }}} char *ros_reply_param_val_by_key */
 
 /* vim: set ts=2 sw=2 noet fdm=marker : */
