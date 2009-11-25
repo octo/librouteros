@@ -1,5 +1,5 @@
 /**
- * libmikrotik - src/main.c
+ * librouteros - src/main.c
  * Copyright (C) 2009  Florian octo Forster
  *
  * This program is free software; you can redistribute it and/or modify it
