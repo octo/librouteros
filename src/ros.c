@@ -109,6 +109,44 @@ static int regtable_handler (ros_connection_t *c, /* {{{ */
 	return (0);
 } /* }}} int regtable_handler */
 
+static void interface_dump (const ros_interface_t *i) /* {{{ */
+{
+	if (i == NULL)
+		return;
+
+	printf ("=== %s ===\n"
+			"Type:    %12s\n"
+			"Comment: %12s\n"
+			"Bytes:   %12"PRIu64" / %12"PRIu64"\n"
+			"Packets: %12"PRIu64" / %12"PRIu64"\n"
+			"Errors:  %12"PRIu64" / %12"PRIu64"\n"
+			"Drops:   %12"PRIu64" / %12"PRIu64"\n"
+			"MTU:     %12u\n"
+			"L2 MTU:  %12u\n"
+			"Running: %12s\n"
+			"Dynamic: %12s\n"
+			"Enabled: %12s\n"
+			"==========\n",
+			i->name, i->type, i->comment,
+			i->rx_bytes, i->tx_bytes,
+			i->rx_packets, i->tx_packets,
+			i->rx_errors, i->tx_errors,
+			i->rx_drops, i->tx_drops,
+			i->mtu, i->l2mtu,
+			i->running ? "true" : "false",
+			i->dynamic ? "true" : "false",
+			i->enabled ? "true" : "false");
+
+	interface_dump (i->next);
+} /* }}} void interface_dump */
+
+static int interface_handler (ros_connection_t *c, /* {{{ */
+		const ros_interface_t *i, void *user_data)
+{
+	interface_dump (i);
+	return (0);
+} /* }}} int interface_handler */
+
 static char *read_password (void) /* {{{ */
 {
 	FILE *tty;
@@ -229,6 +267,10 @@ int main (int argc, char **argv) /* {{{ */
 		ros_query (c, command,
 				(size_t) (argc - (optind + 2)), (const char * const *) (argv + optind + 2),
 				result_handler, /* user data = */ NULL);
+	}
+	else if (strcmp ("interface", command) == 0)
+	{
+		ros_interface (c, interface_handler, /* user data = */ NULL);
 	}
 	else if (strcmp ("registration-table", command) == 0)
 	{
