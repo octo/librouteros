@@ -102,15 +102,15 @@ struct ros_interface_s
 	_Bool enabled;
 
 	/* Next interface */
-	ros_interface_t *next;
+	const ros_interface_t *next;
 };
 
 /* Callback function */
-typedef int (*ros_interface_handler) (ros_connection_t *c,
+typedef int (*ros_interface_handler_t) (ros_connection_t *c,
 		const ros_interface_t *i, void *user_data);
 
 int ros_interface (ros_connection_t *c,
-		ros_interface_handler handler, void *user_data);
+		ros_interface_handler_t handler, void *user_data);
 /* }}} /interface */
 
 /* High-level function for accessing /interface/wireless/registration-table {{{ */
@@ -149,15 +149,15 @@ struct ros_registration_table_s
 	double tx_ccq;
 
 	/* Next interface */
-	ros_registration_table_t *next;
+	const ros_registration_table_t *next;
 };
 
 /* Callback function */
-typedef int (*ros_registration_table_handler) (ros_connection_t *c,
+typedef int (*ros_registration_table_handler_t) (ros_connection_t *c,
 		const ros_registration_table_t *r, void *user_data);
 
 int ros_registration_table (ros_connection_t *c,
-		ros_registration_table_handler handler, void *user_data);
+		ros_registration_table_handler_t handler, void *user_data);
 /* }}} /interface/wireless/registration-table */
 
 #ifdef __cplusplus
