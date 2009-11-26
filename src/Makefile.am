@@ -16,3 +16,8 @@ if BUILD_WITH_LIBSOCKET
 librouteros_la_LIBADD += -lsocket
 endif
 librouteros_la_SOURCES = main.c registration_table.c routeros_api.h routeros_version.h
+
+bin_PROGRAMS = ros
+
+ros_SOURCES = ros.c
+ros_LDADD = librouteros.la
