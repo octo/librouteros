@@ -69,6 +69,54 @@ const char *ros_reply_param_val_by_index (const ros_reply_t *r,
 		unsigned int index);
 const char *ros_reply_param_val_by_key (const ros_reply_t *r, const char *key);
 
+/*
+ * High-level function for accessing /interface/wireless/registration-table
+ */
+struct ros_registration_table_s;
+typedef struct ros_registration_table_s ros_registration_table_t;
+struct ros_registration_table_s
+{
+	/* Name of the interface */
+	const char *interface;
+
+	/* Receive and transmit rate in MBit/s */
+	double rx_rate;
+	double tx_rate;
+
+	/* Packet, octet and frame counters. */
+	uint64_t rx_packets;
+	uint64_t tx_packets;
+	uint64_t rx_bytes;
+	uint64_t tx_bytes;
+	uint64_t rx_frames;
+	uint64_t tx_frames;
+	uint64_t rx_frame_bytes;
+	uint64_t tx_frame_bytes;
+	uint64_t rx_hw_frames;
+	uint64_t tx_hw_frames;
+	uint64_t rx_hw_frame_bytes;
+	uint64_t tx_hw_frame_bytes;
+
+	/* Signal quality information (in dBm) */
+	double rx_signal_strength;
+	double tx_signal_strength;
+	double signal_to_noise;
+
+	/* Overall connection quality (in percent) */
+	double rx_ccq;
+	double tx_ccq;
+
+	/* Next interface */
+	ros_registration_table_t *next;
+};
+
+/* Callback function */
+typedef int (*ros_registration_table_handler) (ros_connection_t *c,
+		const ros_registration_table_t *r, void *user_data);
+
+int ros_registration_table (ros_connection_t *c,
+		ros_registration_table_handler handler, void *user_data);
+
 #ifdef __cplusplus
 }
 #endif
