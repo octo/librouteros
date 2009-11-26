@@ -22,6 +22,9 @@
 #ifndef ROUTEROS_API_H
 #define ROUTEROS_API_H 1
 
+#include <stdint.h>
+#include <inttypes.h>
+
 #include <routeros_version.h>
 
 #define ROUTEROS_API_PORT "8728"
