@@ -15,7 +15,7 @@ librouteros_la_LIBADD = -lgcrypt
 if BUILD_WITH_LIBSOCKET
 librouteros_la_LIBADD += -lsocket
 endif
-librouteros_la_SOURCES = main.c registration_table.c routeros_api.h routeros_version.h
+librouteros_la_SOURCES = main.c registration_table.c interface.c routeros_api.h routeros_version.h
 
 bin_PROGRAMS = ros
 

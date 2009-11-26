@@ -72,9 +72,48 @@ const char *ros_reply_param_val_by_index (const ros_reply_t *r,
 		unsigned int index);
 const char *ros_reply_param_val_by_key (const ros_reply_t *r, const char *key);
 
-/*
- * High-level function for accessing /interface/wireless/registration-table
- */
+/* High-level function for accessing /interface {{{ */
+struct ros_interface_s;
+typedef struct ros_interface_s ros_interface_t;
+struct ros_interface_s
+{
+	/* Name of the interface */
+	const char *name;
+	const char *type;
+	const char *comment;
+
+	/* Packet, octet and error counters. */
+	uint64_t rx_packets;
+	uint64_t tx_packets;
+	uint64_t rx_bytes;
+	uint64_t tx_bytes;
+	uint64_t rx_errors;
+	uint64_t tx_errors;
+	uint64_t rx_drops;
+	uint64_t tx_drops;
+
+	/* Maximum transfer unit */
+	unsigned int mtu;
+	unsigned int l2mtu;
+
+	/* Interface flags */
+	_Bool dynamic;
+	_Bool running;
+	_Bool enabled;
+
+	/* Next interface */
+	ros_interface_t *next;
+};
+
+/* Callback function */
+typedef int (*ros_interface_handler) (ros_connection_t *c,
+		const ros_interface_t *i, void *user_data);
+
+int ros_interface (ros_connection_t *c,
+		ros_interface_handler handler, void *user_data);
+/* }}} /interface */
+
+/* High-level function for accessing /interface/wireless/registration-table {{{ */
 struct ros_registration_table_s;
 typedef struct ros_registration_table_s ros_registration_table_t;
 struct ros_registration_table_s
@@ -119,6 +158,7 @@ typedef int (*ros_registration_table_handler) (ros_connection_t *c,
 
 int ros_registration_table (ros_connection_t *c,
 		ros_registration_table_handler handler, void *user_data);
+/* }}} /interface/wireless/registration-table */
 
 #ifdef __cplusplus
 }
