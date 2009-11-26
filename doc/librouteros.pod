@@ -24,47 +24,15 @@ it will be freed by the library before returning to where the query was called
 from. When the application is done talking to the device and disconnects, the
 connection object will be freed.
 
-=head1 DATA TYPES
+=head1 INTERFACES
 
-The following data types are used and returned by librouteros:
+=head2 Connection
 
-=over 4
+The connection to a I<RouterOS> device is represented by a pointer to a
+B<ros_connection_t> type. This is an opaque data type which cannot be
+dereferenced or manipulated directly.
 
-=item B<ros_connection_t>
-
-The "connection object" represents the connection to one device.
-This is an opaque data type, meaning that you can only have pointers to such
-objects but not dereference or manipulate them directly.
-
-=item B<ros_reply_t>
-
-One part of a reply (which are stored as a list) received from a device. The
-head of the list (the first part) is passed to the callback function.
-This is an opaque data type, meaning that you can only have pointers to such
-objects but not dereference or manipulate them directly.
-
-=item B<ros_reply_handler_t>
-
-Convenience data type for the callback functions. Callback functions must have
-the following prototype:
-
-  int callback (ros_connection_t *c, const ros_reply_t *r, void *user_data);
-
-The first and second arguments are objects representing the connection and the
-reply respectively. I<user_data> is a pointer as passed to B<ros_query> (see
-below).
-
-The value returned by the callback function will be returned by B<ros_query> to
-the calling code. To distinguish from error codes returned by B<ros_query> upon
-errors, use negative values in the callback function.
-
-=back
-
-=head1 FUNCTIONS
-
-The following functions are part of librouteros' API and exported. Functions
-not listed here are not part of the API, should not be exported and may change
-and disappear at any time. Please report such functions are bugs.
+Connection management is done with the following functions:
 
 =over 4
 
@@ -83,6 +51,38 @@ Disconnects from the device and frees all memory associated with the
 connection. After this call, I<c> may not be used anymore.
 
 Returns zero upon success and an error code otherwise.
+
+=back
+
+=head2 General / low level queries
+
+This interface abstracts the network protocol only and leaves actually
+formulating queries and interpreting replies to the calling code. This is meant
+for queries and features for which no higher level interface exists.
+
+The query is sent to the daemon using the B<ros_query> function. The reply is
+decoded and passed to a callback function with the following prototype, also
+called B<ros_reply_handler_t>:
+
+  int callback (ros_connection_t *c, const ros_reply_t *r, void *user_data);
+
+The reply is broken into parts (or "sentences") and passed to the callback
+function as a linked list of type B<ros_reply_t>. The callback uses a couple of
+helper functions to iterate over this list and fetch parameters as necessary.
+
+The first and second arguments are objects representing the connection and the
+reply respectively. I<user_data> is a pointer as passed to B<ros_query> (see
+below). The arguments I<c> and I<r> may not be modified or freed. They will be
+freed after the function returns, so pointers to this data are invalid after
+this.
+
+The value returned by the callback function will be returned by B<ros_query> to
+the calling code. To distinguish from error codes returned by B<ros_query> upon
+errors, use negative values in the callback function.
+
+General queries / replies are handled using the following functions:
+
+=over 4
 
 =item int B<ros_query> (ros_connection_t *I<c>, const char *I<command>, size_t I<args_num>, const char * const *I<args>, ros_reply_handler_t I<handler>, void *I<user_data>)
 
@@ -124,13 +124,46 @@ Returns the parameter value at index I<index> (starting with zero) of reply
 I<r>. If I<index> is out of bounds, returns C<NULL>.
 The returned pointer must not be freed.
 
-=item const char *ros_reply_param_val_by_key (const ros_reply_t *r, const char *key)
+=item const char *B<ros_reply_param_val_by_key> (const ros_reply_t *I<r>, const char *I<key>)
 
 Returns the parameter value corresponding to key I<key> (or C<NULL> if there is
 no such key) of reply I<r>.
 The returned pointer must not be freed.
 
 =back
+
+=head2 High level interface functions for "interface"
+
+This function and the associated struct provide basic information about the
+device's interfaces in an easy and intuitive to use form. It is equivalent to
+issuing the C</interface/print> command. As with the generic interface above, a
+query function is called with a pointer to a callback function. That callback
+function is then called with a list of B<ros_interface_t> structures.
+
+The query function has the following prototype:
+
+ int ros_interface (ros_connection_t *c,
+     ros_interface_handler_t handler, void *user_data);
+
+I<c> is a pointer to a connection object as returned by B<ros_connect>.
+
+I<handler> is a function pointer to a callback function handling the result.
+The callback function must have the following prototype, called
+B<ros_interface_handler_t> for convenience:
+
+ int callback (ros_connection_t *c,
+     const ros_interface_t *i, void *user_data);
+
+The argument I<i> is a pointer to the first element of the list of interfaces
+received from the device. This struct is defined in E<lt>routeros_api.hE<gt>
+and contains information such as the name of the device, received and
+transmitted bytes and whether or not the interface is currently running. No
+element of the list nor any of their members may be modified and will be freed
+when the callback returns.
+
+=head2 High level interface functions for "registration-table"
+
+B<TODO>: Describe the registration-table interface.
 
 =head1 ERROR HANDLING
 
