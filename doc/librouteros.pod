@@ -67,7 +67,8 @@ called B<ros_reply_handler_t>:
   int callback (ros_connection_t *c, const ros_reply_t *r, void *user_data);
 
 The reply is broken into parts (or "sentences") and passed to the callback
-function as a linked list of type B<ros_reply_t>. The callback uses a couple of
+function as a linked list of type B<ros_reply_t>. It is only called once for
+query and must traverse the linked list itself. The callback uses a couple of
 helper functions to iterate over this list and fetch parameters as necessary.
 
 The first and second arguments are objects representing the connection and the
@@ -79,6 +80,10 @@ this.
 The value returned by the callback function will be returned by B<ros_query> to
 the calling code. To distinguish from error codes returned by B<ros_query> upon
 errors, use negative values in the callback function.
+
+Because the entire reply is read back from the connection before the callback
+function is called, it is legal for the callback function to send out another
+query.
 
 General queries / replies are handled using the following functions:
 
