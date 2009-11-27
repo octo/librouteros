@@ -1,5 +1,5 @@
-man_PODS = librouteros.pod
-man_MANS = librouteros.3
+man_PODS = librouteros.pod ros.pod
+man_MANS = librouteros.3 ros.1
 
 EXTRA_DIST = $(man_MANS) $(man_PODS)
 

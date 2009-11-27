@@ -1,0 +1,64 @@
+=head1 NAME
+
+ros - Command line utility to list information from RouterOS devices
+
+=head1 SYNOPSIS
+
+  ros [options] <host> <command> [arguments]
+
+=head1 DESCRIPTION
+
+B<ros> is a command line utility which uses I<librouteros> to connect to a
+device running RouterOS and issue a command on the device. The result is
+received and displayed on standard output. The tool was initially written as a
+simple test application for librouteros but may evolve into something usable.
+
+=head1 OPTIONS
+
+The following options are understood:
+
+=over 4
+
+=item B<-u> I<username>
+
+Use I<username> when authenticating rather than "admin", the default.
+
+=item B<-h>
+
+Display some usage information and exit.
+
+=back
+
+=head1 COMMANDS
+
+You can use one of two possibilities to issue commands. I<Generic commands>
+start with a slash and follow the low-level syntax closely. For example:
+
+  ros router.example.com '/ip/address/print'
+
+Besides this generic approach, I<ros> can also handle the high-level interfaces
+provided by librouteros. Currently the following special "built-in" commands
+are available:
+
+=over 4
+
+=item B<interface>
+
+Display information about each interface, including byte counters.
+
+=item B<registration-table>
+
+Display information about current wireless connections.
+
+=back
+
+=head1 LICENSE
+
+I<ros> is licensed under the GPLv2. No other version of the license is applicable.
+
+=head1 AUTHOR
+
+I<ros> is written by Florian octo Forster E<lt>octo at verplant.orgE<gt>.
+Its homepage can be found at L<http://verplant.org/librouteros/>.
+
+(c) 2009 by Florian octo Forster.
