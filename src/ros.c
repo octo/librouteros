@@ -78,7 +78,9 @@ static void regtable_dump (const ros_registration_table_t *r) /* {{{ */
 	if (r == NULL)
 		return;
 
-	printf ("=== %s ===\n", r->interface);
+	printf ("=== %s / %s ===\n", r->interface, r->radio_name);
+	printf ("Mode:           %12s\n",
+			r->ap ? (r->wds ? "AP with WDS" : "Access point") : "Station");
 	printf ("Rate:           %7g Mbps / %7g Mbps\n", r->rx_rate, r->tx_rate);
 	printf ("Packets:        %12"PRIu64" / %12"PRIu64"\n",
 			r->rx_packets, r->tx_packets);
