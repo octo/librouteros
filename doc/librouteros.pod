@@ -163,7 +163,25 @@ when the callback returns.
 
 =head2 High level interface functions for "registration-table"
 
-B<TODO>: Describe the registration-table interface.
+This high level interface makes it easy to access the "registration table",
+which holds active wireless lan connections. The data returned is equivalent to
+running C</interface/wireless/registration-table/print>. The parsed data is
+passed to a callback function in form of a B<ros_registration_table_t>
+structure.
+
+The query function has the following prototype:
+
+ int ros_registration_table (ros_connection_t *c,
+     ros_registration_table_handler_t handler, void *user_data);
+
+I<c> is the usual connection ocject. I<handler> is a pointer to a function with
+the following prototype:
+
+ int callback (ros_connection_t *c,
+     const ros_registration_table_t *r, void *user_data);
+
+The usual semantics apply: You may not alter I<r> and the memory pointed to by
+I<r> is freed after the callback returned.
 
 =head1 ERROR HANDLING
 
