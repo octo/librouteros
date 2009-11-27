@@ -40,13 +40,14 @@
 #include <assert.h>
 
 #include "routeros_api.h"
+#include "ros_parse.h"
 
 /*
  * Private data types
  */
 struct rt_internal_data_s
 {
-	ros_interface_handler handler;
+	ros_interface_handler_t handler;
 	void *user_data;
 };
 typedef struct rt_internal_data_s rt_internal_data_t;
@@ -54,69 +55,6 @@ typedef struct rt_internal_data_s rt_internal_data_t;
 /*
  * Private functions
  */
-static unsigned int sstrtoui (const char *str) /* {{{ */
-{
-	unsigned int ret;
-	char *endptr;
-
-	if (str == NULL)
-		return (0);
-
-	errno = 0;
-	endptr = NULL;
-	ret = (unsigned int) strtoul (str, &endptr, /* base = */ 10);
-	if ((endptr == str) || (errno != 0))
-		return (0);
-
-	return (ret);
-} /* }}} unsigned int sstrtoui */
-
-static _Bool sstrtob (const char *str) /* {{{ */
-{
-	if (str == NULL)
-		return (false);
-
-	if (strcasecmp ("true", str) == 0)
-		return (true);
-	return (false);
-} /* }}} _Bool sstrtob */
-
-static int string_to_rx_tx_counters (const char *str, /* {{{ */
-		uint64_t *rx, uint64_t *tx)
-{
-	const char *ptr;
-	char *endptr;
-
-	if ((rx == NULL) || (tx == NULL))
-		return (EINVAL);
-
-	*rx = 0;
-	*tx = 0;
-
-	if (str == NULL)
-		return (EINVAL);
-
-	ptr = str;
-	errno = 0;
-	endptr = NULL;
-	*rx = (uint64_t) strtoull (ptr, &endptr, /* base = */ 10);
-	if ((endptr == str) || (errno != 0))
-		return (EIO);
-
-	assert (endptr != NULL);
-	if (*endptr != '/')
-		return (EIO);
-
-	ptr = endptr + 1;
-	errno = 0;
-	endptr = NULL;
-	*tx = (uint64_t) strtoull (ptr, &endptr, /* base = */ 10);
-	if ((endptr == str) || (errno != 0))
-		return (EIO);
-
-	return (0);
-} /* }}} int string_to_rx_tx_counters */
-
 static ros_interface_t *rt_reply_to_interface (const ros_reply_t *r) /* {{{ */
 {
 	ros_interface_t *ret;
@@ -136,13 +74,13 @@ static ros_interface_t *rt_reply_to_interface (const ros_reply_t *r) /* {{{ */
 	ret->type = ros_reply_param_val_by_key (r, "type");
 	ret->comment = ros_reply_param_val_by_key (r, "comment");
 
-	string_to_rx_tx_counters (ros_reply_param_val_by_key (r, "packets"),
+	sstrto_rx_tx_counters (ros_reply_param_val_by_key (r, "packets"),
 			&ret->rx_packets, &ret->tx_packets);
-	string_to_rx_tx_counters (ros_reply_param_val_by_key (r, "bytes"),
+	sstrto_rx_tx_counters (ros_reply_param_val_by_key (r, "bytes"),
 			&ret->rx_bytes, &ret->tx_bytes);
-	string_to_rx_tx_counters (ros_reply_param_val_by_key (r, "errors"),
+	sstrto_rx_tx_counters (ros_reply_param_val_by_key (r, "errors"),
 			&ret->rx_errors, &ret->tx_errors);
-	string_to_rx_tx_counters (ros_reply_param_val_by_key (r, "drops"),
+	sstrto_rx_tx_counters (ros_reply_param_val_by_key (r, "drops"),
 			&ret->rx_drops, &ret->tx_drops);
 
 	ret->mtu = sstrtoui (ros_reply_param_val_by_key (r, "mtu"));
@@ -157,14 +95,14 @@ static ros_interface_t *rt_reply_to_interface (const ros_reply_t *r) /* {{{ */
 	return (ret);
 } /* }}} ros_interface_t *rt_reply_to_interface */
 
-static void if_interface_free (ros_interface_t *r) /* {{{ */
+static void if_interface_free (const ros_interface_t *r) /* {{{ */
 {
-	ros_interface_t *next;
+	const ros_interface_t *next;
 
 	while (r != NULL)
 	{
 		next = r->next;
-		free (r);
+		free ((void *) r);
 		r = next;
 	}
 } /* }}} void if_interface_free */
@@ -193,7 +131,7 @@ static int if_internal_handler (ros_connection_t *c, /* {{{ */
  * Public functions
  */
 int ros_interface (ros_connection_t *c, /* {{{ */
-		ros_interface_handler handler, void *user_data)
+		ros_interface_handler_t handler, void *user_data)
 {
 	rt_internal_data_t data;
 

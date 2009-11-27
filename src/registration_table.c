@@ -38,6 +38,7 @@
 #include <assert.h>
 
 #include "routeros_api.h"
+#include "ros_parse.h"
 
 /*
 Status: re
@@ -86,7 +87,7 @@ Status: done
  */
 struct rt_internal_data_s
 {
-	ros_registration_table_handler handler;
+	ros_registration_table_handler_t handler;
 	void *user_data;
 };
 typedef struct rt_internal_data_s rt_internal_data_t;
@@ -94,53 +95,6 @@ typedef struct rt_internal_data_s rt_internal_data_t;
 /*
  * Private functions
  */
-static double sstrtod (const char *str) /* {{{ */
-{
-	double ret;
-	char *endptr;
-
-	if (str == NULL)
-		return (NAN);
-
-	errno = 0;
-	endptr = NULL;
-	ret = strtod (str, &endptr);
-	if ((endptr == str) || (errno != 0))
-		return (NAN);
-
-	return (ret);
-} /* }}} double sstrtod */
-
-static int string_to_rx_tx_counters (const char *str, /* {{{ */
-		uint64_t *rx, uint64_t *tx)
-{
-	const char *ptr;
-	char *endptr;
-
-	if ((str == NULL) || (rx == NULL) || (tx == NULL))
-		return (EINVAL);
-
-	ptr = str;
-	errno = 0;
-	endptr = NULL;
-	*rx = (uint64_t) strtoull (ptr, &endptr, /* base = */ 10);
-	if ((endptr == str) || (errno != 0))
-		return (EIO);
-
-	assert (endptr != NULL);
-	if (*endptr != ',')
-		return (EIO);
-
-	ptr = endptr + 1;
-	errno = 0;
-	endptr = NULL;
-	*tx = (uint64_t) strtoull (ptr, &endptr, /* base = */ 10);
-	if ((endptr == str) || (errno != 0))
-		return (EIO);
-
-	return (0);
-} /* }}} int string_to_rx_tx_counters */
-
 static ros_registration_table_t *rt_reply_to_regtable (const ros_reply_t *r) /* {{{ */
 {
 	ros_registration_table_t *ret;
@@ -161,17 +115,17 @@ static ros_registration_table_t *rt_reply_to_regtable (const ros_reply_t *r) /* 
 	ret->rx_rate = sstrtod (ros_reply_param_val_by_key (r, "rx-rate"));
 	ret->tx_rate = sstrtod (ros_reply_param_val_by_key (r, "tx-rate"));
 
-	string_to_rx_tx_counters (ros_reply_param_val_by_key (r, "packets"),
+	sstrto_rx_tx_counters (ros_reply_param_val_by_key (r, "packets"),
 			&ret->rx_packets, &ret->tx_packets);
-	string_to_rx_tx_counters (ros_reply_param_val_by_key (r, "bytes"),
+	sstrto_rx_tx_counters (ros_reply_param_val_by_key (r, "bytes"),
 			&ret->rx_bytes, &ret->tx_bytes);
-	string_to_rx_tx_counters (ros_reply_param_val_by_key (r, "frames"),
+	sstrto_rx_tx_counters (ros_reply_param_val_by_key (r, "frames"),
 			&ret->rx_frames, &ret->tx_frames);
-	string_to_rx_tx_counters (ros_reply_param_val_by_key (r, "frame-bytes"),
+	sstrto_rx_tx_counters (ros_reply_param_val_by_key (r, "frame-bytes"),
 			&ret->rx_frame_bytes, &ret->tx_frame_bytes);
-	string_to_rx_tx_counters (ros_reply_param_val_by_key (r, "hw-frames"),
+	sstrto_rx_tx_counters (ros_reply_param_val_by_key (r, "hw-frames"),
 			&ret->rx_hw_frames, &ret->tx_hw_frames);
-	string_to_rx_tx_counters (ros_reply_param_val_by_key (r, "hw-frame-bytes"),
+	sstrto_rx_tx_counters (ros_reply_param_val_by_key (r, "hw-frame-bytes"),
 			&ret->rx_hw_frame_bytes, &ret->tx_hw_frame_bytes);
 
 	ret->rx_signal_strength = sstrtod (ros_reply_param_val_by_key (r, "signal-strength"));
@@ -186,14 +140,14 @@ static ros_registration_table_t *rt_reply_to_regtable (const ros_reply_t *r) /* 
 	return (ret);
 } /* }}} ros_registration_table_t *rt_reply_to_regtable */
 
-static void rt_regtable_free (ros_registration_table_t *r) /* {{{ */
+static void rt_regtable_free (const ros_registration_table_t *r) /* {{{ */
 {
-	ros_registration_table_t *next;
+	const ros_registration_table_t *next;
 
 	while (r != NULL)
 	{
 		next = r->next;
-		free (r);
+		free ((void *) r);
 		r = next;
 	}
 } /* }}} void rt_regtable_free */
@@ -222,7 +176,7 @@ static int rt_internal_handler (ros_connection_t *c, /* {{{ */
  * Public functions
  */
 int ros_registration_table (ros_connection_t *c, /* {{{ */
-		ros_registration_table_handler handler, void *user_data)
+		ros_registration_table_handler_t handler, void *user_data)
 {
 	rt_internal_data_t data;
 
