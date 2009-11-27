@@ -210,6 +210,6 @@ applicable.
 =head1 AUTHOR
 
 librouteros is written by Florian octo Forster E<lt>octo at verplant.orgE<gt>.
-It's homepage can be found at L<http://verplant.org/librouteros/>.
+Its homepage can be found at L<http://verplant.org/librouteros/>.
 
 (c) 2009 by Florian octo Forster.
