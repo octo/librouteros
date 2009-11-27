@@ -111,6 +111,10 @@ static ros_registration_table_t *rt_reply_to_regtable (const ros_reply_t *r) /* 
 	memset (ret, 0, sizeof (*ret));
 
 	ret->interface = ros_reply_param_val_by_key (r, "interface");
+	ret->radio_name = ros_reply_param_val_by_key (r, "radio-name");
+
+	ret->ap = sstrtob (ros_reply_param_val_by_key (r, "ap"));
+	ret->wds = sstrtob (ros_reply_param_val_by_key (r, "wds"));
 
 	ret->rx_rate = sstrtod (ros_reply_param_val_by_key (r, "rx-rate"));
 	ret->tx_rate = sstrtod (ros_reply_param_val_by_key (r, "tx-rate"));

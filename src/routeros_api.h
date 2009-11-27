@@ -120,6 +120,12 @@ struct ros_registration_table_s
 {
 	/* Name of the interface */
 	const char *interface;
+	/* Name of the remote radio */
+	const char *radio_name;
+
+	/* ap is set to true, if the REMOTE radio is an access point. */
+	_Bool ap;
+	_Bool wds;
 
 	/* Receive and transmit rate in MBit/s */
 	double rx_rate;
