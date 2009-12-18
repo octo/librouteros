@@ -1,3 +1,6 @@
+2009-12-18, Version 1.0.0
+	* Code cleanup: Avoid compiler warnings.
+
 2009-11-27, Version 0.2.0
 	* High-level interfaces have been added for "interface" and
 	  "registration-table".
