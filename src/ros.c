@@ -36,6 +36,10 @@
 
 #include "routeros_api.h"
 
+#if !__GNUC__
+# define __attribute__(x) /**/
+#endif
+
 static const char *opt_username = "admin";
 
 static int result_handler (ros_connection_t *c, const ros_reply_t *r, /* {{{ */
@@ -104,8 +108,9 @@ static void regtable_dump (const ros_registration_table_t *r) /* {{{ */
 	regtable_dump (r->next);
 } /* }}} void regtable_dump */
 
-static int regtable_handler (ros_connection_t *c, /* {{{ */
-		const ros_registration_table_t *r, void *user_data)
+static int regtable_handler (__attribute__((unused)) ros_connection_t *c, /* {{{ */
+		const ros_registration_table_t *r,
+		__attribute__((unused)) void *user_data)
 {
 	regtable_dump (r);
 	return (0);
@@ -142,8 +147,9 @@ static void interface_dump (const ros_interface_t *i) /* {{{ */
 	interface_dump (i->next);
 } /* }}} void interface_dump */
 
-static int interface_handler (ros_connection_t *c, /* {{{ */
-		const ros_interface_t *i, void *user_data)
+static int interface_handler (__attribute__((unused)) ros_connection_t *c, /* {{{ */
+		const ros_interface_t *i,
+		__attribute__((unused)) void *user_data)
 {
 	interface_dump (i);
 	return (0);

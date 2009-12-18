@@ -52,6 +52,10 @@
 # define ros_debug(...) /**/
 #endif
 
+#if !__GNUC__
+# define __attribute__(x) /**/
+#endif
+
 /* FIXME */
 char *strdup (const char *);
 
@@ -635,8 +639,9 @@ static int create_socket (const char *node, const char *service) /* {{{ */
 	return (-1);
 } /* }}} int create_socket */
 
-static int login2_handler (ros_connection_t *c, const ros_reply_t *r, /* {{{ */
-		void *user_data)
+static int login2_handler (__attribute__((unused)) ros_connection_t *c, /* {{{ */
+		const ros_reply_t *r,
+		__attribute__((unused)) void *user_data)
 {
 	if (r == NULL)
 		return (EINVAL);
