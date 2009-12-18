@@ -112,7 +112,7 @@ static int read_exact (int fd, void *buffer, size_t buffer_size) /* {{{ */
 				return (status);
 		}
 
-		assert (status <= want_bytes);
+		assert (((size_t) status) <= want_bytes);
 		have_bytes += status;
 		buffer_ptr += status;
 	}
@@ -389,7 +389,7 @@ static int send_command (ros_connection_t *c, /* {{{ */
 			else
 				return (errno);
 		}
-		assert (bytes_written <= buffer_size);
+		assert (((size_t) bytes_written) <= buffer_size);
 
 		buffer_ptr += bytes_written;
 		buffer_size -= bytes_written;
