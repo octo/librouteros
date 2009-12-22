@@ -348,6 +348,12 @@ static int send_command (ros_connection_t *c, /* {{{ */
 	size_t i;
 	int status;
 
+	assert (c != NULL);
+	assert (command != NULL);
+
+	if ((args == NULL) && (args_num > 0))
+		return (EINVAL);
+
 	/* FIXME: For debugging only */
 	memset (buffer, 0, sizeof (buffer));
 
@@ -411,6 +417,8 @@ static int read_word (ros_connection_t *c, /* {{{ */
 
 	if ((buffer == NULL) || (*buffer_size < 1))
 		return (EINVAL);
+
+	assert (c != NULL);
 
 	/* read one byte from the socket */
 	status = read_exact (c->fd, word_length, 1);
@@ -557,6 +565,9 @@ static ros_reply_t *receive_reply (ros_connection_t *c) /* {{{ */
 {
 	ros_reply_t *head;
 	ros_reply_t *tail;
+
+	if (c == NULL)
+		return (NULL);
 
 	head = NULL;
 	tail = NULL;
@@ -844,6 +855,9 @@ int ros_query (ros_connection_t *c, /* {{{ */
 {
 	int status;
 	ros_reply_t *r;
+
+	if ((c == NULL) || (command == NULL) || (handler == NULL))
+		return (EINVAL);
 
 	status = send_command (c, command, args_num, args);
 	if (status != 0)
