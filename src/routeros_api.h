@@ -29,7 +29,30 @@
 
 #define ROUTEROS_API_PORT "8728"
 
+/*
+ * C++ doesn't have _Bool. We can't simply "#define _Bool bool", because we
+ * don't know if "bool" and "_Bool" are of the same size. If they are not, this
+ * would result in ABI incompatible code.
+ *
+ * So we're doing a best-effort solution here: If we're compiled with the GNU
+ * C++ compiler, g++, we include <stdbool.h>. The GCC will, as a GNU extension,
+ * define _Bool for C++. Since it's the compiler doing the definition, it's
+ * kind of save to assume that it will be done in an ABI compatible manner.
+ *
+ * If this results in any problems for you, define "ROS_HAVE_CPP_BOOL" to true
+ * to have this magic disabled. You will then have to define _Bool yourself.
+ *
+ * TODO: Write a test program for the configure sript to figure out the size of
+ *   _Bool. Make this size available via <routeros_versioin.h> and define _Bool
+ *   to short, long, ... here.
+ */
 #ifdef __cplusplus
+# if !defined (ROS_HAVE_CPP_BOOL) || !ROS_HAVE_CPP_BOOL
+#  ifdef __GNUC__
+#   include <stdbool.h>
+#  endif /* __GNUC__ */
+# endif /* !defined (ROS_HAVE_CPP_BOOL) || !ROS_HAVE_CPP_BOOL */
+
 extern "C" {
 #endif
 
