@@ -1,3 +1,11 @@
+2009-12-22, Version 1.0.1
+	* ros_query: Sanity check the arguments. Passing NULL as connection
+	  pointer (and possibly other arguments) would lead to a segmentation
+	  fault when the null pointer was dereferenced. Thanks to Andrey
+	  Ponomarenko for pointing out the problem.
+	* routeros_api.h: Include <stdbool.h> when compiling with g++. As a
+	  GNU extension, this will define _Bool for C++ programs.
+
 2009-12-18, Version 1.0.0
 	* Code cleanup: Avoid compiler warnings.
 
