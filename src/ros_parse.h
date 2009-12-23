@@ -31,6 +31,9 @@ double sstrtod (const char *str);
 
 int sstrto_rx_tx_counters (const char *str, uint64_t *rx, uint64_t *tx);
 
+uint64_t _sstrtodate (const char *str, _Bool have_hour);
+#define sstrtodate(str) _sstrtodate((str), 0)
+
 #endif /* ROS_PARSE_H */
 
 /* vim: set ts=2 sw=2 noet fdm=marker : */

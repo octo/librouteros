@@ -145,4 +145,33 @@ int sstrto_rx_tx_counters (const char *str, /* {{{ */
 	return (0);
 } /* }}} int sstrto_rx_tx_counters */
 
+/* have_hour is initially set to false and later set to true when the first
+ * colon is found. It is used to determine whether the number before the colon
+ * is hours or minutes. External code should use the sstrtodate() macro. */
+uint64_t _sstrtodate (const char *str, _Bool have_hour) /* {{{ */
+{
+	uint64_t ret;
+	char *endptr;
+
+	if ((str == NULL) || (*str == 0))
+		return (0);
+
+	/* Example string: 6w6d18:33:07 */
+	errno = 0;
+	endptr = NULL;
+	ret = (uint64_t) strtoull (str, &endptr, /* base = */ 10);
+	if ((endptr == str) || (errno != 0))
+		return (0);
+
+	switch (*endptr)
+	{
+		case 'y': ret *= 365 * 86400; break;
+		case 'w': ret *=   7 * 86400; break;
+		case 'd': ret *=       86400; break;
+		case ':': ret *= have_hour ? 60 : 3600; have_hour = true; break;
+	}
+
+	return (ret + _sstrtodate (endptr + 1, have_hour));
+} /* }}} uint64_t _sstrtodate */
+
 /* vim: set ts=2 sw=2 noet fdm=marker : */
