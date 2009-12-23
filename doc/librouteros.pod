@@ -188,6 +188,27 @@ the following prototype:
 The usual semantics apply: You may not alter I<r> and the memory pointed to by
 I<r> is freed after the callback returned.
 
+=head2 High level interface functions for "system resource"
+
+This high level interface makes it easy to access several system related
+metrics, such as memory and disk space used. The data returned is equivalent to
+running C</system/resource/print>. The parsed data is passed to a callback
+function in form of a B<ros_system_resource_t> structure.
+
+The query function has the following prototype:
+
+ int ros_system_resource (ros_connection_t *c,
+     ros_system_resource_handler_t handler, void *user_data);
+
+I<c> is the usual connection ocject. I<handler> is a pointer to a function with
+the following prototype:
+
+ int callback (ros_connection_t *c,
+     const ros_system_resource_t *r, void *user_data);
+
+The usual semantics apply: You may not alter I<r> and the memory pointed to by
+I<r> is freed after the callback returned.
+
 =head1 ERROR HANDLING
 
 Some of the functions above return an "error code". This error code can be
