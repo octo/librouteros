@@ -168,6 +168,7 @@ static int system_resource_handler (__attribute__((unused)) ros_connection_t *c,
 	used_hdd_space = r->total_hdd_space - r->free_hdd_space;
 
 	printf ("====== System resources ======\n"
+			"Uptime:        %10.2f days\n"
 			"RouterOS version:  %11s\n"
 			"Architecture name: %11s\n"
 			"Board name:    %15s\n"
@@ -184,7 +185,7 @@ static int system_resource_handler (__attribute__((unused)) ros_connection_t *c,
 			"Sectors written: %13"PRIu64" (%"PRIu64")\n"
 			"Bad blocks:    %15"PRIu64"\n"
 			"==============================\n",
-			r->version,
+			((double) r->uptime) / 86400.0, r->version,
 			r->architecture_name, r->board_name,
 			r->cpu_model, r->cpu_count, r->cpu_load, r->cpu_frequency,
 			r->free_memory,

@@ -62,7 +62,7 @@ static int rt_reply_to_system_resource (const ros_reply_t *r, /* {{{ */
 	if (strcmp ("re", ros_reply_status (r)) != 0)
 		return (rt_reply_to_system_resource (ros_reply_next (r), ret));
 
-	/* TODO: Uptime */
+	ret->uptime = sstrtodate (ros_reply_param_val_by_key (r, "uptime"));
 
 	ret->version = ros_reply_param_val_by_key (r, "version");
 	ret->architecture_name = ros_reply_param_val_by_key (r, "architecture-name");
