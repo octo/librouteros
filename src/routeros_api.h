@@ -189,6 +189,41 @@ int ros_registration_table (ros_connection_t *c,
 		ros_registration_table_handler_t handler, void *user_data);
 /* }}} /interface/wireless/registration-table */
 
+/* High-level function for accessing /system/resource {{{ */
+struct ros_system_resource_s;
+typedef struct ros_system_resource_s ros_system_resource_t;
+struct ros_system_resource_s
+{
+	uint64_t uptime;
+
+	const char *version;
+  const char *architecture_name;
+  const char *board_name;
+
+  const char *cpu_model;
+	unsigned int cpu_count;
+	unsigned int cpu_load;
+  uint64_t cpu_frequency;
+
+	uint64_t free_memory;
+	uint64_t total_memory;
+
+	uint64_t free_hdd_space;
+  uint64_t total_hdd_space;
+
+  uint64_t write_sect_since_reboot;
+  uint64_t write_sect_total;
+  uint64_t bad_blocks;
+};
+
+/* Callback function */
+typedef int (*ros_system_resource_handler_t) (ros_connection_t *c,
+		const ros_system_resource_t *r, void *user_data);
+
+int ros_system_resource (ros_connection_t *c,
+		ros_system_resource_handler_t handler, void *user_data);
+/* }}} /system/resource */
+
 #ifdef __cplusplus
 }
 #endif

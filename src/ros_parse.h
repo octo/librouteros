@@ -25,6 +25,7 @@
 _Bool sstrtob (const char *str);
 
 unsigned int sstrtoui (const char *str);
+uint64_t sstrtoui64 (const char *str);
 
 double sstrtod (const char *str);
 

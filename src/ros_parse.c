@@ -68,6 +68,23 @@ unsigned int sstrtoui (const char *str) /* {{{ */
 	return (ret);
 } /* }}} unsigned int sstrtoui */
 
+uint64_t sstrtoui64 (const char *str) /* {{{ */
+{
+	uint64_t ret;
+	char *endptr;
+
+	if (str == NULL)
+		return (0);
+
+	errno = 0;
+	endptr = NULL;
+	ret = (uint64_t) strtoull (str, &endptr, /* base = */ 10);
+	if ((endptr == str) || (errno != 0))
+		return (0);
+
+	return (ret);
+} /* }}} uint64_t sstrtoui64 */
+
 double sstrtod (const char *str) /* {{{ */
 {
 	double ret;
