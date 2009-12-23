@@ -155,6 +155,55 @@ static int interface_handler (__attribute__((unused)) ros_connection_t *c, /* {{
 	return (0);
 } /* }}} int interface_handler */
 
+static int system_resource_handler (__attribute__((unused)) ros_connection_t *c, /* {{{ */
+		const ros_system_resource_t *r, __attribute__((unused)) void *user_data)
+{
+	uint64_t used_memory;
+	uint64_t used_hdd_space;
+
+	if (r == NULL)
+		return (EINVAL);
+
+	used_memory = r->total_memory - r->free_memory;
+	used_hdd_space = r->total_hdd_space - r->free_hdd_space;
+
+	printf ("====== System resources ======\n"
+			"RouterOS version:  %11s\n"
+			"Architecture name: %11s\n"
+			"Board name:    %15s\n"
+			"CPU model:     %15s\n"
+			"CPU count:     %15u\n"
+			"CPU load:      %15u\n"
+			"CPU frequency: %11"PRIu64" MHz\n"
+			"Memory free:   %9"PRIu64" kByte (%4.1f %%)\n"
+			"Memory used:   %9"PRIu64" kByte (%4.1f %%)\n"
+			"Memory total:  %9"PRIu64" kByte\n"
+			"Space free:    %9"PRIu64" kByte (%4.1f %%)\n"
+			"Space used:    %9"PRIu64" kByte (%4.1f %%)\n"
+			"Space total:   %9"PRIu64" kByte\n"
+			"Sectors written: %13"PRIu64" (%"PRIu64")\n"
+			"Bad blocks:    %15"PRIu64"\n"
+			"==============================\n",
+			r->version,
+			r->architecture_name, r->board_name,
+			r->cpu_model, r->cpu_count, r->cpu_load, r->cpu_frequency,
+			r->free_memory,
+			100.0 * (((double) r->free_memory) / ((double) r->total_memory)),
+			used_memory,
+			100.0 * (((double) used_memory) / ((double) r->total_memory)),
+			r->total_memory,
+			r->free_hdd_space,
+			100.0 * (((double) r->free_hdd_space) / ((double) r->total_hdd_space)),
+			used_hdd_space,
+			100.0 * (((double) used_hdd_space) / ((double) r->total_hdd_space)),
+			r->total_hdd_space,
+			r->write_sect_since_reboot,
+			r->write_sect_total,
+			r->bad_blocks);
+
+	return (0);
+} /* }}} int system_resource_handler */
+
 static char *read_password (void) /* {{{ */
 {
 	FILE *tty;
@@ -283,6 +332,10 @@ int main (int argc, char **argv) /* {{{ */
 	else if (strcmp ("registration-table", command) == 0)
 	{
 		ros_registration_table (c, regtable_handler, /* user data = */ NULL);
+	}
+	else if (strcmp ("system-resource", command) == 0)
+	{
+		ros_system_resource (c, system_resource_handler, /* user data = */ NULL);
 	}
 	else
 	{
