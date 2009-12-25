@@ -272,7 +272,19 @@ static char *read_password (void) /* {{{ */
 
 static void exit_usage (void) /* {{{ */
 {
-	printf ("Usage: ros [options] <host> <command> [args]\n");
+	printf ("Usage: ros [options] <host> <command> [args]\n"
+			"\n"
+			"OPTIONS:\n"
+			"  -u <user>       Use <user> to authenticate.\n"
+			"  -h              Display this help message.\n"
+			"\n");
+	if (ros_version () == ROS_VERSION)
+		printf ("Using librouteros %s\n", ROS_VERSION_STRING);
+	else
+		printf ("Using librouteros %s (%s)\n",
+				ros_version_string (), ROS_VERSION_STRING);
+	printf ("Copyright (c) 2009 by Florian Forster\n");
+
 	exit (EXIT_SUCCESS);
 } /* }}} void exit_usage */
 
