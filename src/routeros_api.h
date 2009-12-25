@@ -197,23 +197,23 @@ struct ros_system_resource_s
 	uint64_t uptime;
 
 	const char *version;
-  const char *architecture_name;
-  const char *board_name;
+	const char *architecture_name;
+	const char *board_name;
 
-  const char *cpu_model;
+	const char *cpu_model;
 	unsigned int cpu_count;
 	unsigned int cpu_load;
-  uint64_t cpu_frequency;
+	uint64_t cpu_frequency;
 
 	uint64_t free_memory;
 	uint64_t total_memory;
 
 	uint64_t free_hdd_space;
-  uint64_t total_hdd_space;
+	uint64_t total_hdd_space;
 
-  uint64_t write_sect_since_reboot;
-  uint64_t write_sect_total;
-  uint64_t bad_blocks;
+	uint64_t write_sect_since_reboot;
+	uint64_t write_sect_total;
+	uint64_t bad_blocks;
 };
 
 /* Callback function */
