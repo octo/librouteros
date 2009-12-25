@@ -50,6 +50,10 @@ Display information about each interface, including byte counters.
 
 Display information about current wireless connections.
 
+=item B<system-resource>
+
+Display generic system information, such as memory used and CPU load.
+
 =back
 
 =head1 LICENSE
