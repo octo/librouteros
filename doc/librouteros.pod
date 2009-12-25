@@ -209,6 +209,24 @@ the following prototype:
 The usual semantics apply: You may not alter I<r> and the memory pointed to by
 I<r> is freed after the callback returned.
 
+=head2 Versioning
+
+The I<routeros> library contains version information that can be used at
+compile time as well as at runtime.
+
+At B<compile time>, the version is available in form of two preprocessor
+defines, C<ROS_VERSION> and C<ROS_VERSION_STRING>. C<ROS_VERSION> is a numeric
+value where the major version is multiplied by 10000 and the minor version is
+multiplied by 100. Version I<1.2.3> would therefore be returned as I<10203>.
+C<ROS_VERSION_STRING> is defined to be a string, for example I<"1.2.3"> and can
+be used for printing a pretty version information.
+
+The same information is available at B<run time> using two functions which
+return the information. The function C<ros_version> returns the numeric value
+of C<ROS_VERSION> and C<ros_version_string> returns the value of
+C<ROS_VERSION_STRING>, making it possible to check the version of the actually
+used library.
+
 =head1 ERROR HANDLING
 
 Some of the functions above return an "error code". This error code can be
