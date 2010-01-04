@@ -1,3 +1,7 @@
+2010-01-04, Version 1.1.1
+	* ros_system_resource: Report bytes rather than KiBibytes. The CPU
+	  frequency is reported in Hertz rather than Megahertz.
+
 2009-12-25, Version 1.1.0
 	* ros_system_resource: Added high-level interface for
 	  “/system/resource/print”.
