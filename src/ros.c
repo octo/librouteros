@@ -175,19 +175,20 @@ static int system_resource_handler (__attribute__((unused)) ros_connection_t *c,
 			"CPU model:     %15s\n"
 			"CPU count:     %15u\n"
 			"CPU load:      %15u\n"
-			"CPU frequency: %11"PRIu64" MHz\n"
-			"Memory free:   %9"PRIu64" kByte (%4.1f %%)\n"
-			"Memory used:   %9"PRIu64" kByte (%4.1f %%)\n"
-			"Memory total:  %9"PRIu64" kByte\n"
-			"Space free:    %9"PRIu64" kByte (%4.1f %%)\n"
-			"Space used:    %9"PRIu64" kByte (%4.1f %%)\n"
-			"Space total:   %9"PRIu64" kByte\n"
+			"CPU frequency: %11g MHz\n"
+			"Memory free:   %10"PRIu64" Byte (%4.1f %%)\n"
+			"Memory used:   %10"PRIu64" Byte (%4.1f %%)\n"
+			"Memory total:  %10"PRIu64" Byte\n"
+			"Space free:    %10"PRIu64" Byte (%4.1f %%)\n"
+			"Space used:    %10"PRIu64" Byte (%4.1f %%)\n"
+			"Space total:   %10"PRIu64" Byte\n"
 			"Sectors written: %13"PRIu64" (%"PRIu64")\n"
 			"Bad blocks:    %15"PRIu64"\n"
 			"==============================\n",
 			((double) r->uptime) / 86400.0, r->version,
 			r->architecture_name, r->board_name,
-			r->cpu_model, r->cpu_count, r->cpu_load, r->cpu_frequency,
+			r->cpu_model, r->cpu_count, r->cpu_load,
+			((double) r->cpu_frequency) / 1000000.0,
 			r->free_memory,
 			100.0 * (((double) r->free_memory) / ((double) r->total_memory)),
 			used_memory,
