@@ -1,3 +1,7 @@
+2010-03-29, Version 1.1.2
+	* librouteros(3): Two memory leaks have been fixed in “ros_query” and
+	  “ros_connect”.
+
 2010-01-04, Version 1.1.1
 	* ros_system_resource: Report bytes rather than KiBibytes. The CPU
 	  frequency is reported in Hertz rather than Megahertz.
