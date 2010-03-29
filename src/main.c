@@ -643,11 +643,11 @@ static int create_socket (const char *node, const char *service) /* {{{ */
 			continue;
 		}
 
+		freeaddrinfo (ai_list);
 		return (fd);
 	}
 
 	freeaddrinfo (ai_list);
-
 	return (-1);
 } /* }}} int create_socket */
 
