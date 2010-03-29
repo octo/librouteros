@@ -215,6 +215,7 @@ static void reply_free (ros_reply_t *r) /* {{{ */
 		free (r->values[i]);
 	}
 
+	free (r->status);
 	free (r->keys);
 	free (r->values);
 
