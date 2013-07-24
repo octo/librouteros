@@ -243,7 +243,12 @@ static char *read_password (void) /* {{{ */
 		return (NULL);
 	}
 
-	fgets (buffer, sizeof (buffer), tty);
+	if (fgets (buffer, sizeof (buffer), tty) == NULL)
+	{
+		fprintf (stderr, "fgets failed: %s\n", strerror (errno));
+		fclose (tty);
+		return (NULL);
+	}
 	buffer[sizeof (buffer) - 1] = 0;
 	buffer_len = strlen (buffer);
 
