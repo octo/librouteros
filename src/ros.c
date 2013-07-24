@@ -329,7 +329,7 @@ int main (int argc, char **argv) /* {{{ */
 	if (passwd == NULL)
 		exit (EXIT_FAILURE);
 
-	c = ros_connect (argv[optind], ROUTEROS_API_PORT,
+	c = ros_connect (host, ROUTEROS_API_PORT,
 			opt_username, passwd);
 	memset (passwd, 0, strlen (passwd));
 	if (c == NULL)
