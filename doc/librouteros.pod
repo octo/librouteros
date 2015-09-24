@@ -209,6 +209,27 @@ the following prototype:
 The usual semantics apply: You may not alter I<r> and the memory pointed to by
 I<r> is freed after the callback returned.
 
+=head2 High level interface functions for "system health"
+
+This high level interface makes it easy to access system health related
+metrics, such as input voltage and temperature. The data returned is equivalent
+to running C</system/health/print>. The parsed data is passed to a callback
+function in form of a B<ros_system_health_t> structure.
+
+The query function has the following prototype:
+
+ int ros_system_health (ros_connection_t *c,
+     ros_system_health_handler_t handler, void *user_data);
+
+I<c> is the usual connection ocject. I<handler> is a pointer to a function with
+the following prototype:
+
+ int callback (ros_connection_t *c,
+     const ros_system_health_t *r, void *user_data);
+
+The usual semantics apply: You may not alter I<r> and the memory pointed to by
+I<r> is freed after the callback returned.
+
 =head2 Versioning
 
 The I<routeros> library contains version information that can be used at
