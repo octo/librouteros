@@ -205,6 +205,21 @@ static int system_resource_handler (__attribute__((unused)) ros_connection_t *c,
 	return (0);
 } /* }}} int system_resource_handler */
 
+static int system_health_handler (__attribute__((unused)) ros_connection_t *c, /* {{{ */
+		const ros_system_health_t *r, __attribute__((unused)) void *user_data)
+{
+	if (r == NULL)
+		return (EINVAL);
+
+	printf ("====== System health ======\n"
+			"Voltage:       %10.2f\n"
+			"Temperature:   %10.2f\n"
+			"==============================\n",
+			r->voltage, r->temperature);
+
+	return (0);
+} /* }}} int system_health_handler */
+
 static char *read_password (void) /* {{{ */
 {
 	FILE *tty;
@@ -354,6 +369,10 @@ int main (int argc, char **argv) /* {{{ */
 	else if (strcmp ("system-resource", command) == 0)
 	{
 		ros_system_resource (c, system_resource_handler, /* user data = */ NULL);
+	}
+	else if (strcmp ("system-health", command) == 0)
+	{
+		ros_system_health (c, system_health_handler, /* user data = */ NULL);
 	}
 	else
 	{

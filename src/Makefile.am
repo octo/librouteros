@@ -20,7 +20,8 @@ librouteros_la_SOURCES = main.c routeros_api.h routeros_version.h \
 			 ros_parse.c ros_parse.h \
 			 registration_table.c \
 			 interface.c \
-			 system_resource.c
+			 system_resource.c \
+			 system_health.c
 
 bin_PROGRAMS = ros
 

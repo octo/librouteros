@@ -223,6 +223,23 @@ int ros_system_resource (ros_connection_t *c,
 		ros_system_resource_handler_t handler, void *user_data);
 /* }}} /system/resource */
 
+/* High-level function for accessing /system/health {{{ */
+struct ros_system_health_s;
+typedef struct ros_system_health_s ros_system_health_t;
+struct ros_system_health_s
+{
+	double voltage;
+	double temperature;
+};
+
+/* Callback function */
+typedef int (*ros_system_health_handler_t) (ros_connection_t *c,
+		const ros_system_health_t *r, void *user_data);
+
+int ros_system_health (ros_connection_t *c,
+		ros_system_health_handler_t handler, void *user_data);
+/* }}} /system/health */
+
 #ifdef __cplusplus
 }
 #endif
