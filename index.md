@@ -1,6 +1,6 @@
 ---
 title: librouteros
-layout: post
+layout: default
 ---
 **librouteros** (or *libRouterOS*) is a *C&nbsp;library* to communicate with network devices by *MikroTik* running their
 Linux-based operating system *RouterOS*. It currently is a very low-level library in that is only abstracts the records
