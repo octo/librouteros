@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <inttypes.h>
+#include <sys/time.h>
 
 #include <routeros_version.h>
 
@@ -69,6 +70,8 @@ typedef int (*ros_reply_handler_t) (ros_connection_t *c, const ros_reply_t *r,
  */
 ros_connection_t *ros_connect (const char *node, const char *service,
 		const char *username, const char *password);
+ros_connection_t *ros_connect_timeout (const char *node, const char *service,
+		const char *username, const char *password, struct timeval *timeout);
 int ros_disconnect (ros_connection_t *con);
 
 /* 

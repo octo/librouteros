@@ -40,6 +40,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <fcntl.h>
 
 #include <gcrypt.h>
 
@@ -108,12 +109,7 @@ static int read_exact (int fd, void *buffer, size_t buffer_size) /* {{{ */
 		errno = 0;
 		status = read (fd, buffer_ptr, want_bytes);
 		if (status < 0)
-		{
-			if (errno == EAGAIN)
-				continue;
-			else
-				return (status);
-		}
+			return (status);
 
 		assert (((size_t) status) <= want_bytes);
 		have_bytes += status;
@@ -598,7 +594,7 @@ static ros_reply_t *receive_reply (ros_connection_t *c) /* {{{ */
 	return (head);
 } /* }}} ros_reply_t *receive_reply */
 
-static int create_socket (const char *node, const char *service) /* {{{ */
+static int create_socket (const char *node, const char *service, struct timeval *timeout) /* {{{ */
 {
 	struct addrinfo  ai_hint;
 	struct addrinfo *ai_list;
@@ -634,12 +630,63 @@ static int create_socket (const char *node, const char *service) /* {{{ */
 			continue;
 		}
 
+		// Set socket nonblocking - just for the connect call
+		fcntl(fd, F_SETFL, O_NONBLOCK);
+
 		status = connect (fd, ai_ptr->ai_addr, ai_ptr->ai_addrlen);
-		if (status != 0)
+		if (status != 0 && (errno != EINPROGRESS))
 		{
 			ros_debug ("create_socket: connect(2) failed.\n");
 			close (fd);
 			continue;
+		}
+
+		// Add socket fd to fdset
+		fd_set fdset;
+		FD_ZERO(&fdset);
+		FD_SET(fd, &fdset);
+
+		// Select on the socket with timeout (could be NULL for inf timeout)
+		if (1 == select(fd + 1, NULL, &fdset, NULL, timeout))
+		{
+			int so_error;
+			socklen_t len = sizeof(so_error);
+
+			getsockopt(fd, SOL_SOCKET, SO_ERROR, &so_error, &len);
+
+			if (so_error != 0)
+			{
+				ros_debug ("create_socket: select() failed.\n");
+				close (fd);
+				continue;
+			}
+		}
+		else
+		{
+			// Set the errno to connection timeout if we got the operation in
+			// progress error. This is because the operation in progress error
+			// is a little misleading once it bubbles through to the user, when
+			// really a timeout is more accurate.
+			if(EINPROGRESS == errno)
+				errno = ETIMEDOUT;
+
+			ros_debug ("create_socket: select() failed.\n");
+			close (fd);
+			continue;
+		}
+
+		// Set back to blocking
+		fcntl(fd, F_SETFL, 0);
+
+		// Set recv timeout
+		if(NULL != timeout)
+		{
+			if (setsockopt (fd, SOL_SOCKET, SO_RCVTIMEO, (char *)timeout, sizeof(timeout)) < 0)
+			{
+				ros_debug ("create_socket: setsockopt() failed.\n");
+				close (fd);
+				continue;
+			}
 		}
 
 		freeaddrinfo (ai_list);
@@ -795,6 +842,12 @@ static int login_handler (ros_connection_t *c, const ros_reply_t *r, /* {{{ */
 ros_connection_t *ros_connect (const char *node, const char *service, /* {{{ */
 		const char *username, const char *password)
 {
+	return ros_connect_timeout(node, service, username, password, NULL);
+} /* }}} ros_connection_t *ros_connect */
+
+ros_connection_t *ros_connect_timeout (const char *node, const char *service, /* {{{ */
+		const char *username, const char *password, struct timeval *timeout)
+{
 	int fd;
 	ros_connection_t *c;
 	int status;
@@ -803,7 +856,7 @@ ros_connection_t *ros_connect (const char *node, const char *service, /* {{{ */
 	if ((node == NULL) || (username == NULL) || (password == NULL))
 		return (NULL);
 
-	fd = create_socket (node, (service != NULL) ? service : ROUTEROS_API_PORT);
+	fd = create_socket (node, (service != NULL) ? service : ROUTEROS_API_PORT, timeout);
 	if (fd < 0)
 		return (NULL);
 
@@ -830,7 +883,7 @@ ros_connection_t *ros_connect (const char *node, const char *service, /* {{{ */
 	}
 
 	return (c);
-} /* }}} ros_connection_t *ros_connect */
+} /* }}} ros_connection_t *ros_connect_timeout */
 
 int ros_disconnect (ros_connection_t *c) /* {{{ */
 {

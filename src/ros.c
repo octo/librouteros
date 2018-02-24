@@ -40,6 +40,7 @@
 #endif
 
 static const char *opt_username = "admin";
+static int opt_timeout = 0;
 
 static int result_handler (ros_connection_t *c, const ros_reply_t *r, /* {{{ */
 		void *user_data)
@@ -297,6 +298,7 @@ static void exit_usage (void) /* {{{ */
 			"OPTIONS:\n"
 			"  -u <user>       Use <user> to authenticate.\n"
 			"  -h              Display this help message.\n"
+			"  -t              Set connect and recv timeout in seconds.\n"
 			"\n");
 	if (ros_version () == ROS_VERSION)
 		printf ("Using librouteros %s\n", ROS_VERSION_STRING);
@@ -317,12 +319,16 @@ int main (int argc, char **argv) /* {{{ */
 
 	int option;
 
-	while ((option = getopt (argc, argv, "u:h?")) != -1)
+	while ((option = getopt (argc, argv, "u:t:h?")) != -1)
 	{
 		switch (option)
 		{
 			case 'u':
 				opt_username = optarg;
+				break;
+
+			case 't':
+				opt_timeout = atoi(optarg);
 				break;
 
 			case 'h':
@@ -343,8 +349,24 @@ int main (int argc, char **argv) /* {{{ */
 	if (passwd == NULL)
 		exit (EXIT_FAILURE);
 
-	c = ros_connect (host, ROUTEROS_API_PORT,
-			opt_username, passwd);
+	if(0 != opt_timeout)
+	{
+		// Timeout is set to something, use it!
+		struct timeval timeout;
+		timeout.tv_sec = opt_timeout;
+		timeout.tv_usec = 0;
+
+		c = ros_connect_timeout (host, ROUTEROS_API_PORT,
+					opt_username, passwd, &timeout);
+	}
+	else
+	{
+		// No timeout configured
+		c = ros_connect (host, ROUTEROS_API_PORT,
+					opt_username, passwd);
+	}
+
+
 	memset (passwd, 0, strlen (passwd));
 	if (c == NULL)
 	{
