@@ -35,22 +35,20 @@ GNU&nbsp;/ Linux. Success stories and patches are very welcome, of course.
 
 ## Download
 
-*   [librouteros-1.1.2.tar.bz2](files/librouteros-1.1.2.tar.bz2) (source tarball)
-*   [librouteros-1.1.2.tar.gz](files/librouteros-1.1.2.tar.gz) (source tarball)
+*   [librouteros-1.1.2.tar.bz2](https://github.com/octo/librouteros/releases/download/librouteros-1.1.2/librouteros-1.1.2.tar.bz2)
+    (source tarball)
 
 ### Development version
 
-The development files are kept in a [Git](http://git-scm.com/) repository. You can “clone” it with the following
+The development files are [hosted on
+Github](https://github.com/octo/librouteros/). You can “clone” it with the following
 command. Patches are welcome anytime.&nbsp;:)
 
     git clone git://github.com/octo/librouteros.git
 
 ## Documentation
 
-The only documentation right now is the manpage. You can find an online version here:
-
-*   [librouteros(3)](manpages/librouteros.3.html)
-*   [ros(1)](manpages/ros.1.html)
+The only documentation right now are the `librouteros(3)` and `ros(1)` manpages.
 
 ## See also
 
