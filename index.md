@@ -6,12 +6,8 @@ layout: default
 Linux-based operating system *RouterOS*. It currently is a very low-level library in that is only abstracts the records
 based network protocol, not the commands, arguments and filters provided via this interface.
 
-The goal is to write a plugin for [collectd](https://collectd.org/) based on this library. Once that's done and
-released, the interface of this library will be declared stable and version&nbsp;1.0 will be released. Until then, this
-is a work in progress.
-
-While it's hopefully easy to port the library to other operating systems, it has currently only be tested with
-GNU&nbsp;/ Linux. Success stories and patches are very welcome, of course.
+While it's hopefully easy to port the library to other operating systems, it has currently only be tested on Linux.
+Success stories and patches are very welcome.
 
 ## News
 
@@ -42,7 +38,7 @@ GNU&nbsp;/ Linux. Success stories and patches are very welcome, of course.
 
 The development files are [hosted on
 Github](https://github.com/octo/librouteros/). You can “clone” it with the following
-command. Patches are welcome anytime.&nbsp;:)
+command. Pull Requests are welcome anytime.&nbsp;:)
 
     git clone git://github.com/octo/librouteros.git
 
@@ -58,5 +54,6 @@ The only documentation right now are the `librouteros(3)` and `ros(1)` manpages.
 
 ## License information
 
-librouteros is distributed under the *ISC License*. The license can also be found in the `COPYING` file in the
+librouteros is distributed under the [ISC License](https://opensource.org/licenses/ISC). The license can also be found
+in the `COPYING` file in the
 repository.
