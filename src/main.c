@@ -600,6 +600,13 @@ static int create_socket (const char *node, const char *service, struct timeval 
 	struct addrinfo *ai_list;
 	struct addrinfo *ai_ptr;
 	int status;
+	struct timeval local_timeout;
+
+	// Make a local copy of the timeout value
+	if(NULL != timeout)
+	{
+		local_timeout = *timeout;
+	}
 
 	ros_debug ("create_socket (node = %s, service = %s);\n",
 			node, service);
@@ -681,7 +688,10 @@ static int create_socket (const char *node, const char *service, struct timeval 
 		// Set recv timeout
 		if(NULL != timeout)
 		{
-			if (setsockopt (fd, SOL_SOCKET, SO_RCVTIMEO, (char *)timeout, sizeof(timeout)) < 0)
+			// Reinitialise timeout value as select() may have changed this
+			*timeout = local_timeout;
+
+			if (setsockopt (fd, SOL_SOCKET, SO_RCVTIMEO, (char *)timeout, sizeof(struct timeval)) < 0)
 			{
 				ros_debug ("create_socket: setsockopt() failed.\n");
 				close (fd);
