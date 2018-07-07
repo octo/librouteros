@@ -75,14 +75,14 @@ static ros_interface_t *rt_reply_to_interface (const ros_reply_t *r) /* {{{ */
 
 	if (ros_reply_param_val_by_key (r, "packets") == NULL)
 	{
-		ret->rx_packets = sstrtoui (ros_reply_param_val_by_key (r, "rx-packet"));
-		ret->tx_packets = sstrtoui (ros_reply_param_val_by_key (r, "tx-packet"));
-		ret->rx_bytes = sstrtoui (ros_reply_param_val_by_key (r, "rx-byte"));
-		ret->tx_bytes = sstrtoui (ros_reply_param_val_by_key (r, "tx-byte"));
-		ret->rx_errors = sstrtoui (ros_reply_param_val_by_key (r, "rx-error"));
-		ret->tx_errors = sstrtoui (ros_reply_param_val_by_key (r, "tx-error"));
-		ret->rx_drops = sstrtoui (ros_reply_param_val_by_key (r, "rx-drop"));
-		ret->tx_drops = sstrtoui (ros_reply_param_val_by_key (r, "tx-drop"));
+		ret->rx_packets = sstrtoui64 (ros_reply_param_val_by_key (r, "rx-packet"));
+		ret->tx_packets = sstrtoui64 (ros_reply_param_val_by_key (r, "tx-packet"));
+		ret->rx_bytes = sstrtoui64 (ros_reply_param_val_by_key (r, "rx-byte"));
+		ret->tx_bytes = sstrtoui64 (ros_reply_param_val_by_key (r, "tx-byte"));
+		ret->rx_errors = sstrtoui64 (ros_reply_param_val_by_key (r, "rx-error"));
+		ret->tx_errors = sstrtoui64 (ros_reply_param_val_by_key (r, "tx-error"));
+		ret->rx_drops = sstrtoui64 (ros_reply_param_val_by_key (r, "rx-drop"));
+		ret->tx_drops = sstrtoui64 (ros_reply_param_val_by_key (r, "tx-drop"));
 	}
 	else
 	{
