@@ -1,3 +1,9 @@
+2018-07-08, Version 1.1.3 (unreleased)
+	* ros_interface: Added support for RouterOS 6.x splitted counters.
+	* ros: The “system-health” high-level command has been added.
+	* ros_system_health: Added high-level interface for
+	  “/system/health/print”.
+
 2010-03-29, Version 1.1.2
 	* librouteros(3): Two memory leaks have been fixed in “ros_query” and
 	  “ros_connect”.
