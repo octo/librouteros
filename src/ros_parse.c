@@ -167,6 +167,9 @@ uint64_t _sstrtodate (const char *str, _Bool have_hour) /* {{{ */
 		case 'y': ret *= 365 * 86400; break;
 		case 'w': ret *=   7 * 86400; break;
 		case 'd': ret *=       86400; break;
+		case 'h': ret *=        3600; break;
+		case 'm': ret *=          60; break;
+		case 's': ret *=           1; break;
 		case ':': ret *= have_hour ? 60 : 3600; have_hour = true; break;
 	}
 
