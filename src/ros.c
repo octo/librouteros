@@ -295,7 +295,7 @@ static void exit_usage (void) /* {{{ */
 	printf ("Usage: ros [options] <host> <command> [args]\n"
 			"\n"
 			"OPTIONS:\n"
-			"  -u <user>       Use <user> to authenticate.\n"
+			"  -u <user>       Use <user> to authenticate (optional, default: admin).\n"
 			"  -h              Display this help message.\n"
 			"\n");
 	if (ros_version () == ROS_VERSION)
