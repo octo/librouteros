@@ -55,6 +55,9 @@
 # define __attribute__(x) /**/
 #endif
 
+/* needed prototypes */
+static int login_handler (ros_connection_t *c, const ros_reply_t *r, void *user_data);
+
 /* FIXME */
 char *strdup (const char *);
 
@@ -651,13 +654,23 @@ static int create_socket (const char *node, const char *service) /* {{{ */
 } /* }}} int create_socket */
 
 static int login2_handler (__attribute__((unused)) ros_connection_t *c, /* {{{ */
-		const ros_reply_t *r,
-		__attribute__((unused)) void *user_data)
+		const ros_reply_t *r, void *user_data)
 {
+	const char *ret;
 	if (r == NULL)
 		return (EINVAL);
 
 	reply_dump (r);
+
+	/* check if we need to use old auth method */
+	ret = ros_reply_param_val_by_key (r, "ret");
+	if (ret != NULL)
+	{
+		ros_debug ("login2_handler: Reply does contain \"ret\" with challenge parameter.\n"
+				"Falling back to old (pre-v6.43) auth method.\n");
+		/* re-process result with the old handler */
+		return login_handler(c, r, user_data);
+	}
 
 	if (strcmp (r->status, "trap") == 0)
 	{
@@ -800,6 +813,10 @@ ros_connection_t *ros_connect (const char *node, const char *service, /* {{{ */
 	int status;
 	ros_login_data_t user_data;
 
+	const char *params[2];
+	char param_username[1024];
+	char param_password[1024];
+
 	if ((node == NULL) || (username == NULL) || (password == NULL))
 		return (NULL);
 
@@ -819,8 +836,14 @@ ros_connection_t *ros_connect (const char *node, const char *service, /* {{{ */
 
 	user_data.username = username;
 	user_data.password = password;
-	status = ros_query (c, "/login", /* args num = */ 0, /* args = */ NULL,
-			login_handler, &user_data);
+
+	/* first we are trying to login using new post-v6.43 method
+		with username and password filled in */
+	snprintf (param_username, sizeof (param_username), "=name=%s", username);
+	snprintf (param_password, sizeof (param_password), "=password=%s", password);
+	params[0] = param_username;
+	params[1] = param_password;
+	status = ros_query (c, "/login", 2, params, login2_handler, &user_data);
 
 	if (status != 0)
 	{
