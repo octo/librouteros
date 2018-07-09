@@ -144,9 +144,12 @@ struct ros_registration_table_s
 	const char *interface;
 	/* Name of the remote radio */
 	const char *radio_name;
+	/* MAC address of the registered client */
+	const char *mac_address;
 
 	/* ap is set to true, if the REMOTE radio is an access point. */
 	_Bool ap;
+	/* whether the connected client is using wds or not */
 	_Bool wds;
 
 	/* Receive and transmit rate in MBit/s */

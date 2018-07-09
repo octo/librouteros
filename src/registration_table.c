@@ -111,6 +111,7 @@ static ros_registration_table_t *rt_reply_to_regtable (const ros_reply_t *r) /* 
 
 	ret->interface = ros_reply_param_val_by_key (r, "interface");
 	ret->radio_name = ros_reply_param_val_by_key (r, "radio-name");
+	ret->mac_address = ros_reply_param_val_by_key (r, "mac-address");
 
 	ret->ap = sstrtob (ros_reply_param_val_by_key (r, "ap"));
 	ret->wds = sstrtob (ros_reply_param_val_by_key (r, "wds"));

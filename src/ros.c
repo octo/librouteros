@@ -81,7 +81,10 @@ static void regtable_dump (const ros_registration_table_t *r) /* {{{ */
 	if (r == NULL)
 		return;
 
-	printf ("=== %s / %s ===\n", r->interface, r->radio_name);
+	printf ("=== %s / %s ===\n", r->interface,
+			r->radio_name ? r->radio_name : r->mac_address);
+	if (r->mac_address)
+		printf ("MAC address:         %s\n", r->mac_address);
 	printf ("Mode:           %12s\n",
 			r->ap ? (r->wds ? "AP with WDS" : "Access point") : "Station");
 	printf ("Rate:           %7g Mbps / %7g Mbps\n", r->rx_rate, r->tx_rate);
