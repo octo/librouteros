@@ -116,7 +116,8 @@ static int read_exact (int fd, void *buffer, size_t buffer_size) /* {{{ */
 				continue;
 			else
 				return (status);
-		}
+		} else if (status == 0)
+			return (EINVAL);
 
 		assert (((size_t) status) <= want_bytes);
 		have_bytes += status;
