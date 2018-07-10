@@ -112,7 +112,7 @@ static int read_exact (int fd, void *buffer, size_t buffer_size) /* {{{ */
 		status = read (fd, buffer_ptr, want_bytes);
 		if (status < 0)
 		{
-			if (errno == EAGAIN)
+			if (errno == EAGAIN || errno == EINTR)
 				continue;
 			else
 				return (status);
