@@ -8,12 +8,6 @@ about the commands and responses available. Should such an high-level interface
 prove useful, it will be added as the need arises.
 
 
-## Dependencies
-
-The RouterOS API uses a simple challenge-response authentication schema using
-cryptographically secure MD5 hashes. The library used for MD5 computation is
-*gcrypt*, a cryptographic library originally written for the GnuPG project.
-
 ## Enabling API connections
 
 API connections (sometimes also called “Winbox connections”) must be explicitly

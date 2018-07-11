@@ -12,16 +12,16 @@ lib_LTLIBRARIES = librouteros.la
 
 librouteros_la_LDFLAGS = -version-info @LIBROUTEROS_CURRENT@:@LIBROUTEROS_REVISION@:@LIBROUTEROS_AGE@
 librouteros_la_LDFLAGS += -export-symbols-regex "^ros_"
-librouteros_la_LIBADD = -lgcrypt
 if BUILD_WITH_LIBSOCKET
-librouteros_la_LIBADD += -lsocket
+librouteros_la_LIBADD = -lsocket
 endif
 librouteros_la_SOURCES = main.c routeros_api.h routeros_version.h \
 			 ros_parse.c ros_parse.h \
 			 registration_table.c \
 			 interface.c \
 			 system_resource.c \
-			 system_health.c
+			 system_health.c \
+			 md5/md5.c md5/md5.h
 
 bin_PROGRAMS = ros
 
