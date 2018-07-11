@@ -65,10 +65,22 @@ typedef int (*ros_reply_handler_t) (ros_connection_t *c, const ros_reply_t *r,
 		void *user_data);
 
 /*
+ * Connect option struct
+ */
+struct ros_connect_opts_s
+{
+	unsigned int receive_timeout;
+	unsigned int connect_timeout;
+};
+typedef struct ros_connect_opts_s ros_connect_opts_t;
+
+/*
  * Connection handling
  */
 ros_connection_t *ros_connect (const char *node, const char *service,
 		const char *username, const char *password);
+ros_connection_t *ros_connect_with_options (const char *node, const char *service,
+		const char *username, const char *password, const ros_connect_opts_t *connect_opts);
 int ros_disconnect (ros_connection_t *con);
 
 /* 

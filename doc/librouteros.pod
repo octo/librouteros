@@ -45,6 +45,22 @@ I<username> and I<password>.
 
 On failure, C<NULL> is returned and B<errno> is set appropriately.
 
+=item ros_connection_t *B<ros_connect_with_options> (const char *I<node>, const char *I<service>, const char *I<username>, const char *I<password>, const ros_connect_opts_t *I<connect_opts>)
+
+Same as B<ros_connect> but configures additional receive and connect timeouts.
+A valid pointer to struct B<ros_connect_opts_t> has to be provided as the last argument.
+
+The definition of this struct:
+
+struct ros_connect_opts_s
+{
+  unsigned int receive_timeout;
+  unsigned int connect_timeout;
+
+} ros_connect_opts_t;
+
+If receive times out then the reply recevied so far (if any) is returned.
+
 =item int B<ros_disconnect> (ros_connection_t *I<c>)
 
 Disconnects from the device and frees all memory associated with the

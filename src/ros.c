@@ -40,6 +40,7 @@
 #endif
 
 static const char *opt_username = "admin";
+static int opt_receive_timeout = 0;
 
 static int result_handler (ros_connection_t *c, const ros_reply_t *r, /* {{{ */
 		void *user_data)
@@ -299,6 +300,7 @@ static void exit_usage (void) /* {{{ */
 			"\n"
 			"OPTIONS:\n"
 			"  -u <user>       Use <user> to authenticate (optional, default: admin).\n"
+			"  -t <timeout>    Set receive timeout in seconds.\n"
 			"  -h              Display this help message.\n"
 			"\n");
 	if (ros_version () == ROS_VERSION)
@@ -320,12 +322,15 @@ int main (int argc, char **argv) /* {{{ */
 
 	int option;
 
-	while ((option = getopt (argc, argv, "u:h?")) != -1)
+	while ((option = getopt (argc, argv, "u:t:h?")) != -1)
 	{
 		switch (option)
 		{
 			case 'u':
 				opt_username = optarg;
+				break;
+			case 't':
+				opt_receive_timeout = atoi(optarg);
 				break;
 
 			case 'h':
@@ -346,8 +351,12 @@ int main (int argc, char **argv) /* {{{ */
 	if (passwd == NULL)
 		exit (EXIT_FAILURE);
 
-	c = ros_connect (host, ROUTEROS_API_PORT,
-			opt_username, passwd);
+	/* prepare struct with options */
+	ros_connect_opts_t opts = {
+		.receive_timeout = opt_receive_timeout,
+	};
+	c = ros_connect_with_options (host, ROUTEROS_API_PORT,
+			opt_username, passwd, &opts);
 	memset (passwd, 0, strlen (passwd));
 	if (c == NULL)
 	{
