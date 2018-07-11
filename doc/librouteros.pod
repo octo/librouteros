@@ -45,6 +45,11 @@ I<username> and I<password>.
 
 On failure, C<NULL> is returned and B<errno> is set appropriately.
 
+=item ros_connection_t *B<ros_connect_timeout> (const char *I<node>, const char *I<service>, const char *I<username>, const char *I<password>, const struct timeval *I<timeout>)
+
+Same as B<ros_connect> but configures a receive timeout. If receive times out
+then the reply recevied so far (if any) is returned.
+
 =item int B<ros_disconnect> (ros_connection_t *I<c>)
 
 Disconnects from the device and frees all memory associated with the
