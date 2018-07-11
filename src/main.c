@@ -40,6 +40,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <fcntl.h>
+#include <sys/time.h>
 
 #include "md5/md5.h"
 
@@ -112,7 +114,7 @@ static int read_exact (int fd, void *buffer, size_t buffer_size) /* {{{ */
 		status = read (fd, buffer_ptr, want_bytes);
 		if (status < 0)
 		{
-			if (errno == EAGAIN || errno == EINTR)
+			if (errno == EINTR)
 				continue;
 			else
 				return (status);
@@ -602,7 +604,7 @@ static ros_reply_t *receive_reply (ros_connection_t *c) /* {{{ */
 	return (head);
 } /* }}} ros_reply_t *receive_reply */
 
-static int create_socket (const char *node, const char *service) /* {{{ */
+static int create_socket (const char *node, const char *service, const struct timeval *timeout) /* {{{ */
 {
 	struct addrinfo  ai_hint;
 	struct addrinfo *ai_list;
@@ -644,6 +646,17 @@ static int create_socket (const char *node, const char *service) /* {{{ */
 			ros_debug ("create_socket: connect(2) failed.\n");
 			close (fd);
 			continue;
+		}
+
+		// Set receive timeout on the socket if one is set
+		if(NULL != timeout)
+		{
+			if (setsockopt (fd, SOL_SOCKET, SO_RCVTIMEO, (char *)timeout, sizeof(struct timeval)) < 0)
+			{
+				ros_debug ("create_socket: setsockopt() failed.\n");
+				close (fd);
+				continue;
+			}
 		}
 
 		freeaddrinfo (ai_list);
@@ -808,6 +821,12 @@ static int login_handler (ros_connection_t *c, const ros_reply_t *r, /* {{{ */
 ros_connection_t *ros_connect (const char *node, const char *service, /* {{{ */
 		const char *username, const char *password)
 {
+	return ros_connect_timeout(node, service, username, password, NULL);
+} /* }}} ros_connection_t *ros_connect */
+
+ros_connection_t *ros_connect_timeout (const char *node, const char *service, /* {{{ */
+		const char *username, const char *password, const struct timeval *timeout)
+{
 	int fd;
 	ros_connection_t *c;
 	int status;
@@ -820,7 +839,7 @@ ros_connection_t *ros_connect (const char *node, const char *service, /* {{{ */
 	if ((node == NULL) || (username == NULL) || (password == NULL))
 		return (NULL);
 
-	fd = create_socket (node, (service != NULL) ? service : ROUTEROS_API_PORT);
+	fd = create_socket (node, (service != NULL) ? service : ROUTEROS_API_PORT, timeout);
 	if (fd < 0)
 		return (NULL);
 
