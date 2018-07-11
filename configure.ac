@@ -1,7 +1,7 @@
 AC_INIT(librouteros, 1.1.3)
 AC_CONFIG_SRCDIR(src/main.c)
 AC_CONFIG_HEADERS(src/config.h)
-AM_INIT_AUTOMAKE(dist-bzip2)
+AM_INIT_AUTOMAKE([dist-bzip2 subdir-objects])
 AC_LANG(C)
 
 AC_PREFIX_DEFAULT("/opt/librouteros")
@@ -43,11 +43,6 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS(sys/types.h)
 AC_CHECK_HEADERS(sys/socket.h)
 AC_CHECK_HEADERS(netdb.h)
-
-#
-# Check for libgcrypt
-#
-AC_CHECK_HEADERS(gcrypt.h, [], [AC_MSG_ERROR("gcrypt.h is required for librouteros to compile")])
 
 socket_needs_socket="no"
 AC_CHECK_FUNCS(socket, [],

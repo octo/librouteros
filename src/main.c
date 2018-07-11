@@ -41,7 +41,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-#include <gcrypt.h>
+#include "md5/md5.h"
 
 #include "routeros_api.h"
 
@@ -725,7 +725,7 @@ static void make_password_hash (char response_hex[33], /* {{{ */
 	uint8_t challenge_bin[16];
 	uint8_t response_bin[16];
 	char data_buffer[password_length+17];
-	gcry_md_hd_t md_handle;
+	MD5_CTX md5;
 
 	hash_hex_to_binary (challenge_bin, challenge_hex);
 
@@ -733,10 +733,9 @@ static void make_password_hash (char response_hex[33], /* {{{ */
 	memcpy (&data_buffer[1], password, password_length);
 	memcpy (&data_buffer[1+password_length], challenge_bin, 16);
 
-	gcry_md_open (&md_handle, GCRY_MD_MD5, /* flags = */ 0);
-	gcry_md_write (md_handle, data_buffer, sizeof (data_buffer));
-	memcpy (response_bin, gcry_md_read (md_handle, GCRY_MD_MD5), 16);
-	gcry_md_close (md_handle);
+	MD5_Init (&md5);
+	MD5_Update (&md5, data_buffer, sizeof (data_buffer));
+	MD5_Final (response_bin, &md5);
 
 	hash_binary_to_hex (response_hex, response_bin);
 } /* }}} void make_password_hash */
