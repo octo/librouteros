@@ -65,7 +65,7 @@ typedef int (*ros_reply_handler_t) (ros_connection_t *c, const ros_reply_t *r,
 		void *user_data);
 
 /*
- * Connect option struct
+ * Connect options struct
  */
 struct ros_connect_opts_s
 {

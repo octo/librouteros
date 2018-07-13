@@ -195,7 +195,7 @@ The query function has the following prototype:
  int ros_registration_table (ros_connection_t *c,
      ros_registration_table_handler_t handler, void *user_data);
 
-I<c> is the usual connection ocject. I<handler> is a pointer to a function with
+I<c> is the usual connection object. I<handler> is a pointer to a function with
 the following prototype:
 
  int callback (ros_connection_t *c,
@@ -216,7 +216,7 @@ The query function has the following prototype:
  int ros_system_resource (ros_connection_t *c,
      ros_system_resource_handler_t handler, void *user_data);
 
-I<c> is the usual connection ocject. I<handler> is a pointer to a function with
+I<c> is the usual connection object. I<handler> is a pointer to a function with
 the following prototype:
 
  int callback (ros_connection_t *c,
@@ -237,7 +237,7 @@ The query function has the following prototype:
  int ros_system_health (ros_connection_t *c,
      ros_system_health_handler_t handler, void *user_data);
 
-I<c> is the usual connection ocject. I<handler> is a pointer to a function with
+I<c> is the usual connection object. I<handler> is a pointer to a function with
 the following prototype:
 
  int callback (ros_connection_t *c,
