@@ -69,8 +69,10 @@ typedef int (*ros_reply_handler_t) (ros_connection_t *c, const ros_reply_t *r,
  */
 struct ros_connect_opts_s
 {
+	/* receive_timeout is the receive timeout in seconds. */
 	unsigned int receive_timeout;
-	unsigned int connect_timeout;
+	/* connect_timeout is the connect timeout in seconds. */
+	unsigned int connect_timeout; /* Not yet implemented! */
 };
 typedef struct ros_connect_opts_s ros_connect_opts_t;
 
