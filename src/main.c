@@ -41,6 +41,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <sys/time.h>
+#include <fcntl.h>
 
 #include "md5/md5.h"
 
@@ -603,6 +604,83 @@ static ros_reply_t *receive_reply (ros_connection_t *c) /* {{{ */
 	return (head);
 } /* }}} ros_reply_t *receive_reply */
 
+static int connect_socket_timeout (struct addrinfo *ai_ptr, unsigned int timeout_sec)
+{
+	struct timeval timeout = {
+		.tv_sec = timeout_sec,
+	};
+
+	/* value of 0 means no timeout, select treats NULL as no timeout */
+	struct timeval *timeout_ptr = (0 == timeout_sec)? NULL : &timeout;
+
+	int fd;
+	int status;
+
+	fd = socket (ai_ptr->ai_family, ai_ptr->ai_socktype, ai_ptr->ai_protocol);
+	if (fd < 0)
+	{
+		ros_debug ("connect_socket_timeout: socket(2) failed.\n");
+		return (0);
+	}
+
+	/* set socket nonblocking just for the connect() - allows us to call select() on connecting socket */
+	fcntl(fd, F_SETFL, O_NONBLOCK);
+
+	status = connect (fd, ai_ptr->ai_addr, ai_ptr->ai_addrlen);
+	if (status != 0 && (errno != EINPROGRESS))
+	{
+		/* connect() failed due to some reason other than a timeout */
+		ros_debug ("connect_socket_timeout: connect(2) failed.\n");
+		close (fd);
+		return (0);
+	}
+
+	fd_set fdset;
+	FD_ZERO (&fdset);
+	FD_SET (fd, &fdset);
+
+	if (1 == select (fd + 1, NULL, &fdset, NULL, timeout_ptr))
+	{
+		/* find out what happened to the socket */
+		int socket_error;
+		socklen_t len = sizeof(socket_error);
+
+		if (0 != getsockopt (fd, SOL_SOCKET, SO_ERROR, &socket_error, &len))
+		{
+			ros_debug ("connect_socket_timeout: getsockopt() failed\n");
+			close (fd);
+			return (0);
+		}
+
+		if (0 != socket_error)
+		{
+			ros_debug ("connect_socket_timeout: connect() failed.\n");
+			close (fd);
+
+			/* fill in errno so the caller knows what happened */
+			errno = socket_error;
+			return (0);
+		}
+	}
+	else
+	{
+		ros_debug ("connect_socket_timeout: select() failed.\n");
+		close (fd);
+
+		/* replace error code as ETIMEDOUT is more representative than EINPROGRESS */
+		if (EINPROGRESS == errno)
+		{
+			errno = ETIMEDOUT;
+		}
+
+		return 0;
+	}
+
+	/* convert the socket back to blocking mode */
+	fcntl (fd, F_SETFL, 0);
+	return (fd);
+} /* }}} int *try_connect */
+
 static int create_socket (const char *node, const char *service, const ros_connect_opts_t *connect_opts) /* {{{ */
 {
 	struct addrinfo  ai_hint;
@@ -629,21 +707,20 @@ static int create_socket (const char *node, const char *service, const ros_conne
 	for (ai_ptr = ai_list; ai_ptr != NULL; ai_ptr = ai_ptr->ai_next)
 	{
 		int fd;
-		int status;
 
-		fd = socket (ai_ptr->ai_family, ai_ptr->ai_socktype,
-				ai_ptr->ai_protocol);
-		if (fd < 0)
+		if (connect_opts && connect_opts->connect_timeout)
 		{
-			ros_debug ("create_socket: socket(2) failed.\n");
-			continue;
+			fd = connect_socket_timeout (ai_ptr, connect_opts->connect_timeout);
+		}
+		else
+		{
+			/* timeout value of 0 means inf timeout */
+			fd = connect_socket_timeout (ai_ptr, 0);
 		}
 
-		status = connect (fd, ai_ptr->ai_addr, ai_ptr->ai_addrlen);
-		if (status != 0)
+		if(0 == fd)
 		{
-			ros_debug ("create_socket: connect(2) failed.\n");
-			close (fd);
+			/* connection failed, try the next host */
 			continue;
 		}
 
