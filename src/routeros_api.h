@@ -72,7 +72,7 @@ struct ros_connect_opts_s
 	/* receive_timeout is the receive timeout in seconds. */
 	unsigned int receive_timeout;
 	/* connect_timeout is the connect timeout in seconds. */
-	unsigned int connect_timeout; /* Not yet implemented! */
+	unsigned int connect_timeout;
 };
 typedef struct ros_connect_opts_s ros_connect_opts_t;
 
