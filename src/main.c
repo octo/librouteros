@@ -668,7 +668,7 @@ static int connect_socket_timeout (struct addrinfo *ai_ptr, unsigned int timeout
 		close (fd);
 
 		/* replace error code as ETIMEDOUT is more representative than EINPROGRESS */
-		if (errno = EINPROGRESS)
+		if (errno == EINPROGRESS)
 			errno = ETIMEDOUT;
 
 		return (0);
