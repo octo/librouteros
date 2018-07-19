@@ -72,13 +72,11 @@ static int rt_reply_to_system_resource (const ros_reply_t *r, /* {{{ */
 	ret->cpu_load = sstrtoui (ros_reply_param_val_by_key (r, "cpu-load"));
 	ret->cpu_frequency = sstrtoui64 (ros_reply_param_val_by_key (r, "cpu-frequency")) * 1000000;
 
-	/* One "kilobyte" is 1024 bytes, according to "janisk", see
-	 * <http://forum.mikrotik.com/viewtopic.php?f=2&t=37943> */
-	ret->free_memory = sstrtoui64 (ros_reply_param_val_by_key (r, "free-memory")) * 1024;
-	ret->total_memory = sstrtoui64 (ros_reply_param_val_by_key (r, "total-memory")) * 1024;
+	ret->free_memory = sstrtoui64 (ros_reply_param_val_by_key (r, "free-memory"));
+	ret->total_memory = sstrtoui64 (ros_reply_param_val_by_key (r, "total-memory"));
 
-	ret->free_hdd_space = sstrtoui64 (ros_reply_param_val_by_key (r, "free-hdd-space")) * 1024;
-	ret->total_hdd_space = sstrtoui64 (ros_reply_param_val_by_key (r, "total-hdd-space")) * 1024;
+	ret->free_hdd_space = sstrtoui64 (ros_reply_param_val_by_key (r, "free-hdd-space"));
+	ret->total_hdd_space = sstrtoui64 (ros_reply_param_val_by_key (r, "total-hdd-space"));
 
 	ret->write_sect_since_reboot = sstrtoui64 (ros_reply_param_val_by_key (r, "write-sect-since-reboot"));
 	ret->write_sect_total = sstrtoui64 (ros_reply_param_val_by_key (r, "write-sect-total"));
