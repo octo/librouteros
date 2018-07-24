@@ -43,6 +43,8 @@
 #include <sys/time.h>
 #include <fcntl.h>
 
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 #include "md5/md5.h"
 
 #include "routeros_api.h"
@@ -69,6 +71,8 @@ char *strdup (const char *);
 struct ros_connection_s
 {
 	int fd;
+	SSL *ssl;
+	SSL_CTX *ctx;
 };
 
 struct ros_reply_s
@@ -91,12 +95,12 @@ typedef struct ros_login_data_s ros_login_data_t;
 /*
  * Private functions
  */
-static int read_exact (int fd, void *buffer, size_t buffer_size) /* {{{ */
+static int read_exact (SSL *ssl, void *buffer, size_t buffer_size) /* {{{ */
 {
 	char *buffer_ptr;
 	size_t have_bytes;
 
-	if ((fd < 0) || (buffer == NULL))
+	if ((ssl == NULL) || (buffer == NULL))
 		return (EINVAL);
 
 	if (buffer_size == 0)
@@ -111,7 +115,7 @@ static int read_exact (int fd, void *buffer, size_t buffer_size) /* {{{ */
 
 		want_bytes = buffer_size - have_bytes;
 		errno = 0;
-		status = read (fd, buffer_ptr, want_bytes);
+		status = SSL_read (ssl, buffer_ptr, want_bytes);
 		if (status < 0)
 		{
 			if (errno == EINTR)
@@ -397,7 +401,7 @@ static int send_command (ros_connection_t *c, /* {{{ */
 		ssize_t bytes_written;
 
 		errno = 0;
-		bytes_written = write (c->fd, buffer_ptr, buffer_size);
+		bytes_written = SSL_write (c->ssl, buffer_ptr, buffer_size);
 		if (bytes_written < 0)
 		{
 			if (errno == EAGAIN)
@@ -427,14 +431,14 @@ static int read_word (ros_connection_t *c, /* {{{ */
 	assert (c != NULL);
 
 	/* read one byte from the socket */
-	status = read_exact (c->fd, word_length, 1);
+	status = read_exact (c->ssl, word_length, 1);
 	if (status != 0)
 		return (status);
 
 	/* Calculate `req_size' */
 	if (((unsigned char) word_length[0]) == 0xF0) /* {{{ */
 	{
-		status = read_exact (c->fd, &word_length[1], 4);
+		status = read_exact (c->ssl, &word_length[1], 4);
 		if (status != 0)
 			return (status);
 
@@ -445,7 +449,7 @@ static int read_word (ros_connection_t *c, /* {{{ */
 	}
 	else if ((word_length[0] & 0xE0) == 0xE0)
 	{
-		status = read_exact (c->fd, &word_length[1], 3);
+		status = read_exact (c->ssl, &word_length[1], 3);
 		if (status != 0)
 			return (status);
 
@@ -456,7 +460,7 @@ static int read_word (ros_connection_t *c, /* {{{ */
 	}
 	else if ((word_length[0] & 0xC0) == 0xC0)
 	{
-		status = read_exact (c->fd, &word_length[1], 2);
+		status = read_exact (c->ssl, &word_length[1], 2);
 		if (status != 0)
 			return (status);
 
@@ -466,7 +470,7 @@ static int read_word (ros_connection_t *c, /* {{{ */
 	}
 	else if ((word_length[0] & 0x80) == 0x80)
 	{
-		status = read_exact (c->fd, &word_length[1], 1);
+		status = read_exact (c->ssl, &word_length[1], 1);
 		if (status != 0)
 			return (status);
 
@@ -494,7 +498,7 @@ static int read_word (ros_connection_t *c, /* {{{ */
 		return (0);
 	}
 
-	status = read_exact (c->fd, buffer, req_size);
+	status = read_exact (c->ssl, buffer, req_size);
 	if (status != 0)
 		return (status);
 	*buffer_size = req_size;
@@ -909,7 +913,7 @@ ros_connection_t *ros_connect_with_options (const char *node, const char *servic
 	if ((node == NULL) || (username == NULL) || (password == NULL))
 		return (NULL);
 
-	fd = create_socket (node, (service != NULL) ? service : ROUTEROS_API_PORT, connect_opts);
+	fd = create_socket (node, (service != NULL) ? service : ROUTEROS_API_SSL_PORT, connect_opts);
 	if (fd < 0)
 		return (NULL);
 
@@ -922,6 +926,30 @@ ros_connection_t *ros_connect_with_options (const char *node, const char *servic
 	memset (c, 0, sizeof (*c));
 
 	c->fd = fd;
+
+	SSL_library_init();
+	SSL_load_error_strings();
+	c->ctx = SSL_CTX_new (TLS_client_method());
+	if (c->ctx == NULL)
+		return NULL;
+	SSL_CTX_set_cipher_list(c->ctx, "ADH AES256 SHA");
+
+	/* Now we have TCP conncetion. Start SSL negotiation. */
+	c->ssl = SSL_new (c->ctx);
+	if (c->ssl == NULL)
+		return NULL;
+	SSL_set_fd (c->ssl, c->fd);
+	status = SSL_connect (c->ssl);
+	if (status == -1)
+	{
+		ERR_print_errors_fp (stderr);
+		return NULL;
+	}
+
+	ros_debug ("SSL handshake has read %ju bytes and written %ju bytes\n",
+		BIO_number_read(SSL_get_rbio(c->ssl)),
+		BIO_number_written(SSL_get_wbio(c->ssl)));
+	ros_debug ("SSL connection using %s\n", SSL_get_cipher (c->ssl));
 
 	user_data.username = username;
 	user_data.password = password;
@@ -951,8 +979,13 @@ int ros_disconnect (ros_connection_t *c) /* {{{ */
 
 	if (c->fd >= 0)
 	{
+		SSL_shutdown (c->ssl);  /* send SSL/TLS close_notify */
+
 		close (c->fd);
 		c->fd = -1;
+
+		SSL_free (c->ssl);
+		SSL_CTX_free (c->ctx);
 	}
 
 	free (c);

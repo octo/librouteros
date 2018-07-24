@@ -27,6 +27,7 @@
 #include <routeros_version.h>
 
 #define ROUTEROS_API_PORT "8728"
+#define ROUTEROS_API_SSL_PORT "8729"
 
 /*
  * C++ doesn't have _Bool. We can't simply "#define _Bool bool", because we

@@ -361,7 +361,7 @@ int main (int argc, char **argv) /* {{{ */
 		.receive_timeout = opt_receive_timeout,
 		.connect_timeout = opt_connect_timeout,
 	};
-	c = ros_connect_with_options (host, ROUTEROS_API_PORT,
+	c = ros_connect_with_options (host, ROUTEROS_API_SSL_PORT,
 			opt_username, passwd, &opts);
 	memset (passwd, 0, strlen (passwd));
 	if (c == NULL)
